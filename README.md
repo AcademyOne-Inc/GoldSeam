@@ -14,6 +14,12 @@ GoldSeam speaks the [Model Context Protocol](https://modelcontextprotocol.io) ov
 Every answer carries its source and the date of the snapshot that produced it, and **an absence is
 stated as an absence** rather than filled in.
 
+**Why it exists.** The advising conversation has moved. People ask the assistant on their phone, not a
+portal, and what is missing there is not intelligence — it is authoritative information about schools,
+programs, requirements and credentials. GoldSeam supplies that underneath, wherever the person already
+is: **assistant-agnostic by design**, so a new surface is new reach rather than a new integration. It
+is the connecting layer of the learning-to-earning marketplace AcademyOne is building.
+
 ---
 
 ## Connect it
