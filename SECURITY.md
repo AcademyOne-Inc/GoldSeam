@@ -28,7 +28,11 @@ The full statement, including how information is used and shared:
 ## Connecting
 
 One public address, `https://goldseam.ksaworks.com/mcp`, over HTTPS with streamable HTTP. **No
-authentication, no key, no account.** Every tool reads public data; none writes to a person's record
-anywhere.
+authentication and no account** — nothing is asked of you to connect. Every tool reads public data;
+none writes to a person's record anywhere.
+
+**The free key is authorization, not authentication.** Anonymous use carries a daily allowance; a key
+raises it and names your organization in the usage record. It is never required to reach the service,
+and it grants no additional data — every caller gets the same answer.
 
 If you are offered a GoldSeam address that is not the one above, it is not ours.

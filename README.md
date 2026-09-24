@@ -6,7 +6,7 @@
 https://goldseam.ksaworks.com/mcp
 ```
 
-No account. No key. No sign-up. It is a public service, published by
+No authentication. No account. No sign-up. It is a public service, published by
 [AcademyOne, Inc.](https://www.academyone.com), the company behind
 [KSAWorks](https://ksaworks.com).
 
@@ -86,6 +86,13 @@ measure — ask it with `get_courseshelf_summary`. No number is written on this 
 service's own answer is always the current one.
 
 ---
+
+## Using it beyond a first look
+
+**Nothing is required to connect.** Anonymous use carries a daily allowance; past it, the answer
+points at a free key-request form. **A key is authorization to keep using the service, not
+authentication to reach it** — it raises the allowance and names your organization in the usage
+record. Ask for one at https://goldseam.ksaworks.com/request-key.
 
 ## Privacy
 

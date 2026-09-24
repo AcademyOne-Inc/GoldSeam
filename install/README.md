@@ -8,6 +8,9 @@ https://goldseam.ksaworks.com/mcp
 
 Transport: streamable HTTP. Authentication: none. Nothing to install, no account to create.
 
+A free key exists, and it is **authorization to keep using the service, not a way in** — anonymous use
+carries a daily allowance and a key raises it. You never need one to start.
+
 | Where you are | How |
 |---|---|
 | **Claude** (any plan, Free included) | [claude/](claude/) — add it once as a custom connector |
