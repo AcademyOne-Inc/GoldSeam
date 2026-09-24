@@ -1,6 +1,7 @@
 # GoldSeam
 
-**One address where an AI gets sourced answers about learning and work.**
+**The marketplace for teaching, training and learning — to explore, compare and engage with, through
+the AI you already use.**
 
 ```
 https://goldseam.ksaworks.com/mcp
@@ -14,11 +15,16 @@ GoldSeam speaks the [Model Context Protocol](https://modelcontextprotocol.io) ov
 Every answer carries its source and the date of the snapshot that produced it, and **an absence is
 stated as an absence** rather than filled in.
 
+**What you can do here.** **Explore** what postsecondary organizations offer — programs, courses,
+checklists, certifications, and the careers they lead to. **Compare** them on what actually differs:
+what a program requires, what your credits and exams may count as, what a certification takes.
+**Engage** — take an answer to the school that decides, with its source attached.
+
 **Why it exists.** The advising conversation has moved. People ask the assistant on their phone, not a
-portal, and what is missing there is not intelligence — it is authoritative information about schools,
-programs, requirements and credentials. GoldSeam supplies that underneath, wherever the person already
-is: **assistant-agnostic by design**, so a new surface is new reach rather than a new integration. It
-is the connecting layer of the learning-to-earning marketplace AcademyOne is building.
+portal, and what is missing there is not authoritative information about teaching, training and
+learning — it is that the information is scattered across every institution that publishes it.
+GoldSeam puts it in one seam, wherever the person already is: **assistant-agnostic by design**, so a
+new surface is new reach rather than a new integration.
 
 ---
 
@@ -36,7 +42,7 @@ how to ask GoldSeam well.
 
 ---
 
-## What it answers
+## What it covers
 
 **CourseShelf** — colleges and what they teach, from the institutions' own published catalogs.
 Identify a school by name or IPEDS UNITID, or list a state's; read its programs, its courses, its
