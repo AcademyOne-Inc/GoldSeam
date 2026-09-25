@@ -10,9 +10,9 @@ step written to S3.
 
 Contract tag on every answer: `goldwire_v1`.
 
-**Schemas:** every request and reply is defined field by field in
-[goldwire-openapi.yaml](goldwire-openapi.yaml) (OpenAPI 3.1). Where this page and that file differ,
-the file is right.
+**Specification:** every call, field and error message is written out in
+[goldwire-spec.md](goldwire-spec.md). Where this page differs from it, the spec is right.
+[goldwire-openapi.yaml](goldwire-openapi.yaml) is an early machine form, to be regenerated from the spec.
 
 ---
 
