@@ -11,7 +11,7 @@ step written to S3.
 Contract tag on every answer: `goldwire_v1`.
 
 **Specification:** every call, field and error message is written out in
-[goldwire-spec.md](goldwire-spec.md). Where this page differs from it, the spec is right.
+[goldwire/](goldwire/README.md) — a summary page and one page per call. Where this page differs from it, the spec is right.
 [goldwire-openapi.yaml](goldwire-openapi.yaml) is an early machine form, to be regenerated from the spec.
 
 ---
