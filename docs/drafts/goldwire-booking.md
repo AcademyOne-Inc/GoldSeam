@@ -10,6 +10,10 @@ step written to S3.
 
 Contract tag on every answer: `goldwire_v1`.
 
+**Schemas:** every request and reply is defined field by field in
+[goldwire-openapi.yaml](goldwire-openapi.yaml) (OpenAPI 3.1). Where this page and that file differ,
+the file is right.
+
 ---
 
 ## 1. Where GoldWire sits in the flow
@@ -84,6 +88,9 @@ ever set from the school's answer, never assumed.
 
 ## 3. The GoldWire services
 
+Money is always `{ "amount": "241.00", "currency": "USD" }`: a decimal string with two places, never a
+float, so a price never drifts by a cent in transit.
+
 Reads are **GET**s and never change anything. Anything that changes state is a **PUT** carrying an
 `idempotency_key`: sending the same request twice returns the first answer and never takes a second
 seat or a second charge.
@@ -130,11 +137,21 @@ Common to every response:
 ```json
 {
   "contract": "goldwire_v1",
-  "request_id": "7c1e…",
+  "request_id": "7c1e0b52-3d4f-4a8e-9b21-6f0c2d8e1a47",
   "status": "ok",
   "as_of": "2026-09-25T14:02:11Z",
-  "source": { "kind": "school_sis_feed", "unitid": "225070", "feed": "banner-ssb", "read_at": "2026-09-25T14:02:09Z" },
-  "learning_unit": { "learning_unit_id": "lu_225070_ENGL1301", "code": "ENGL 1301", "title": "Composition I", "credits": 3 },
+  "source": {
+    "kind": "school_sis_feed",
+    "unitid": "225070",
+    "feed": "banner-ssb",
+    "read_at": "2026-09-25T14:02:09Z"
+  },
+  "learning_unit": {
+    "learning_unit_id": "lu_225070_ENGL1301",
+    "code": "ENGL 1301",
+    "title": "Composition I",
+    "credits": 3
+  },
   "term": "2027SP",
   "sections": [
     {
@@ -143,7 +160,14 @@ Common to every response:
       "crn": "21457",
       "modality": "in_person",
       "campus": "Main",
-      "meetings": [{ "days": "TR", "start": "09:30", "end": "10:50", "room": "LA 114" }],
+      "meetings": [
+        {
+          "days": "TR",
+          "start": "09:30",
+          "end": "10:50",
+          "room": "LA 114"
+        }
+      ],
       "instructor": "Staff",
       "starts_on": "2027-01-19",
       "ends_on": "2027-05-14",
@@ -152,9 +176,19 @@ Common to every response:
         "enrolled": 21,
         "held": 2,
         "available": 2,
-        "waitlist": { "open": true, "length": 0, "capacity": 5 }
+        "waitlist": {
+          "open": true,
+          "length": 0,
+          "capacity": 5
+        }
       },
-      "booking": { "bookable": true, "requires": ["prerequisite_check"], "hold_window_minutes": 20 },
+      "booking": {
+        "bookable": true,
+        "requires": [
+          "prerequisite_check"
+        ],
+        "hold_window_minutes": 20
+      },
       "add_deadline": "2027-01-26",
       "drop_deadline_full_refund": "2027-02-02"
     }
@@ -193,26 +227,96 @@ saw is the price that is held. The quote is PUT to S3 so it can be proved later.
 ```json
 {
   "contract": "goldwire_v1",
-  "request_id": "9a4d…",
+  "request_id": "9a4d6e13-8c2b-4f71-a5d0-3e9b7c1f2a64",
   "status": "ok",
   "as_of": "2026-09-25T14:03:40Z",
-  "source": { "kind": "school_fee_policy", "policy_id": "pol_225070_tuition_2026_27", "edition": "2026–27", "published": "2026-06-01" },
+  "source": {
+    "kind": "school_fee_policy",
+    "policy_id": "pol_225070_tuition_2026_27",
+    "edition": "2026–27",
+    "published": "2026-06-01"
+  },
   "quote_id": "qt_01J8Z3V6N4",
   "quote_expires_at": "2026-09-25T14:33:40Z",
   "section_id": "sec_225070_2027SP_ENGL1301_002",
   "residency_applied": "in_district",
   "payment_mode": "prepay",
   "line_items": [
-    { "code": "TUITION",  "label": "Tuition, 3 credits × $62.00",   "amount": 186.00, "payee": "school",   "source": "pol_225070_tuition_2026_27" },
-    { "code": "GEN_FEE",  "label": "General service fee",           "amount":  45.00, "payee": "school",   "source": "pol_225070_fees_2026_27" },
-    { "code": "COURSE_FEE","label": "Course fee (ENGL 1301)",        "amount":  10.00, "payee": "school",   "source": "lu_225070_ENGL1301" },
-    { "code": "GW_BOOKING","label": "GoldWire booking fee",          "amount":   0.00, "payee": "goldwire" }
+    {
+      "code": "TUITION",
+      "label": "Tuition, 3 credits × $62.00",
+      "amount": {
+        "amount": "186.00",
+        "currency": "USD"
+      },
+      "payee": "school",
+      "source": "pol_225070_tuition_2026_27"
+    },
+    {
+      "code": "GEN_FEE",
+      "label": "General service fee",
+      "amount": {
+        "amount": "45.00",
+        "currency": "USD"
+      },
+      "payee": "school",
+      "source": "pol_225070_fees_2026_27"
+    },
+    {
+      "code": "COURSE_FEE",
+      "label": "Course fee (ENGL 1301)",
+      "amount": {
+        "amount": "10.00",
+        "currency": "USD"
+      },
+      "payee": "school",
+      "source": "lu_225070_ENGL1301"
+    },
+    {
+      "code": "GW_BOOKING",
+      "label": "GoldWire booking fee",
+      "amount": {
+        "amount": "0.00",
+        "currency": "USD"
+      },
+      "payee": "goldwire"
+    }
   ],
-  "totals": { "school": 241.00, "goldwire": 0.00, "total": 241.00 },
-  "due": { "now": 241.00, "at_school": 0.00, "school_due_date": null },
-  "refund_policy": { "full_refund_until": "2027-02-02", "source": "pol_225070_refunds_2026_27" },
+  "totals": {
+    "school": {
+      "amount": "241.00",
+      "currency": "USD"
+    },
+    "goldwire": {
+      "amount": "0.00",
+      "currency": "USD"
+    },
+    "total": {
+      "amount": "241.00",
+      "currency": "USD"
+    },
+    "totals_complete": true
+  },
+  "due": {
+    "now": {
+      "amount": "241.00",
+      "currency": "USD"
+    },
+    "at_school": {
+      "amount": "0.00",
+      "currency": "USD"
+    },
+    "school_due_date": null
+  },
+  "refund_policy": {
+    "full_refund_until": "2027-02-02",
+    "source": "pol_225070_refunds_2026_27"
+  },
   "no_show_fee": null,
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/quotes/qt_01J8Z3V6N4.json", "etag": "\"3f1c…\"" }
+  "s3": {
+    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/quotes/qt_01J8Z3V6N4.json",
+    "etag": "\"3f1c9d0e2b7c41a5f6\""
+  }
 }
 ```
 
@@ -247,16 +351,32 @@ it is incomplete (`"totals_complete": false`).
 ```json
 {
   "contract": "goldwire_v1",
-  "request_id": "b2e7…",
+  "request_id": "b2e7f4a9-1c6d-4e38-8f52-0a7b3d9e6c15",
   "status": "ok",
+  "as_of": "2026-09-25T14:04:05Z",
   "hold_id": "hld_01J8Z3XQ2K",
   "hold_state": "HELD",
   "section_id": "sec_225070_2027SP_ENGL1301_002",
   "quote_id": "qt_01J8Z3V6N4",
   "hold_expires_at": "2026-09-25T14:24:05Z",
-  "seats_after_hold": { "capacity": 25, "enrolled": 21, "held": 3, "available": 1 },
-  "next": { "service": "goldcard.authorize", "amount_due_now": 241.00, "payment_mode": "prepay" },
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"a90b…\"" }
+  "seats_after_hold": {
+    "capacity": 25,
+    "enrolled": 21,
+    "held": 3,
+    "available": 1
+  },
+  "next": {
+    "service": "goldcard.authorize",
+    "amount_due_now": {
+      "amount": "241.00",
+      "currency": "USD"
+    },
+    "payment_mode": "prepay"
+  },
+  "s3": {
+    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json",
+    "etag": "\"a90b9d0e2b7c41a5f6\""
+  }
 }
 ```
 
@@ -297,8 +417,9 @@ GoldWire does not touch money. The client calls GoldCard with the hold, and brin
 ```json
 {
   "contract": "goldwire_v1",
-  "request_id": "c51f…",
+  "request_id": "c51f2d8a-7e4b-4c19-b6a3-5d0e8f1a9c72",
   "status": "ok",
+  "as_of": "2026-09-25T14:11:53Z",
   "booking_id": "bkg_01J8Z42M7R",
   "booking_state": "CONFIRMED",
   "confirmation_number": "GW-225070-7Q4K-2M",
@@ -311,16 +432,30 @@ GoldWire does not touch money. The client calls GoldCard with the hold, and brin
   "section_id": "sec_225070_2027SP_ENGL1301_002",
   "payment": {
     "mode": "prepay",
-    "goldcard_authorization_id": "auth_7HF2…",
-    "amount": 241.00,
+    "goldcard_authorization_id": "auth_7HF2Q9",
+    "amount": {
+      "amount": "241.00",
+      "currency": "USD"
+    },
     "funds_status": "authorized",
     "capture": "on_confirmation"
   },
-  "refund_policy": { "full_refund_until": "2027-02-02", "source": "pol_225070_refunds_2026_27" },
+  "refund_policy": {
+    "full_refund_until": "2027-02-02",
+    "source": "pol_225070_refunds_2026_27"
+  },
   "s3": {
-    "booking":  { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json", "etag": "\"e4d2…\"", "version_id": "3HL4k…" },
-    "receipt":  { "key": "goldwire/receipts/lrn_8f3a…/bkg_01J8Z42M7R.json", "etag": "\"77ab…\"" }
-  }
+    "booking": {
+      "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
+      "etag": "\"e4d29d0e2b7c41a5f6\"",
+      "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY"
+    },
+    "receipt": {
+      "key": "goldwire/receipts/lrn_8f3a/bkg_01J8Z42M7R.json",
+      "etag": "\"77ab9d0e2b7c41a5f6\""
+    }
+  },
+  "hold_id": "hld_01J8Z3XQ2K"
 }
 ```
 
@@ -344,8 +479,9 @@ answer to "am I in?" and it never recomputes; it reads the record.
 
 ### 3.7 `release_seat` — PUT
 
-`PUT /goldwire/v1/bookings/{booking_id}/release` — arguments: `learner_id`, `idempotency_key`,
-`booking_id` or `hold_id`, `reason`.
+`PUT /goldwire/v1/releases/{idempotency_key}` — arguments: `learner_id`, exactly one of `hold_id`
+or `booking_id`, `reason` (`changed_mind`, `schedule_conflict`, `chose_other_section`, `financial`,
+`other`), optional `note`.
 
 Releases a hold, or asks the school to drop a booking. The response gives the new state
 (`RELEASED` / `DROP_REQUESTED` / `DROPPED`) and the refund the **school's published refund policy**
