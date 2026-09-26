@@ -193,9 +193,23 @@ A course ID is only unique **within one school**; `ART 101` at two schools are t
 |---|---|---|---|---|
 | **Learner ID** `learner_id` | the person in GoldSeam — private, the same at every school | `lrn_` + 8–40 letters/digits | `lrn_8f3a2c91d7` | an email, name or SSN |
 | **School person ID** `school_person_id` | the person's ID **at one school**, in that school's own format | whatever the school uses, 1–20 characters | Banner `A00482913` · PeopleSoft EMPLID `1048291` · Colleague `0482913` · Workday `S0048291` | an SSN (never accepted) |
-| **Person link ID** `person_link_id` | GoldWire's link between one learner and their record at one school, made by [Get Person](05-get-person.md) | `psl_` + 10 letters/digits | `psl_3N8QK2WD7F` | |
+| **Person link ID** `person_link_id` | GoldWire's link between one learner and their record at one school, made by [Get person](05-get-person.md) or [Enroll as a non-degree student](06-enroll-non-degree.md) | `psl_` + 10 letters/digits | `psl_3N8QK2WD7F` | |
 | **Date of birth** `date_of_birth` | | `YYYY-MM-DD` | `2001-04-17` | `04/17/2001` |
 | **Postal code** `postal_code` | | US: 5 digits or 5+4 | `75090` · `75090-1234` | `7509` |
+
+## Kinds of student and load
+
+| Term | What it is | Values | Examples |
+|---|---|---|---|
+| **Student type** `student_type` | whether the learner is working toward a credential at this school | `degree_seeking` — admitted into a degree or certificate program; **needs the school's admission application** · `non_degree` — taking courses without a program; **no application**, enrolled with [Call 6](06-enroll-non-degree.md), often capped at a number of credits | a nursing AAS student is `degree_seeking`; a retiree taking ART 101 for interest is `non_degree` |
+| **Admission status** `admission_status` | where a degree-seeking learner stands with admission | `admitted` · `applied` (decision pending) · `not_applied` · `not_required` (non-degree) | |
+| **Program** `program.program_code` | the degree or certificate a degree-seeking learner is admitted to | the school's program code, 1–20 characters | `AA-GS` · `AAS-NURS` · `CERT-WELD` |
+| **Load** `load` | how many credits the learner carries **in one term**, against the school's threshold. Degree-seeking and non-degree students both have a load | `full_time` · `part_time` | 12 credits in spring at a school whose threshold is 12 → `full_time`; 9 → `part_time` |
+| **Full-time threshold** `full_time_at_credits` | credits at which a term becomes full-time, per the school | whole number, per term type | `12` fall/spring · `6` summer |
+
+Full-time and part-time are **not** a kind of student: the same learner can be part-time in fall and
+full-time in spring. Financial aid uses finer bands (three-quarter-time, half-time); GoldWire reports
+the credits so GoldCard and the school can apply them.
 
 ## Money
 

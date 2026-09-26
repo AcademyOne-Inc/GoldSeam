@@ -1,6 +1,6 @@
-# Call 11 — Release a seat
+# Call 12 — Release a seat
 
-[← Call 10 — Get a booking](10-get-booking.md) · [Summary](README.md) · Next: [Call 12 — Record the school's answer →](12-record-school-answer.md)
+[← Call 11 — Get a booking](11-get-booking.md) · [Summary](README.md) · Next: [Call 13 — Record the school's answer →](13-record-school-answer.md)
 
 > **Draft.** Nothing here is live.
 
@@ -18,9 +18,9 @@ policy says and never promises more.
 
 ## Where it sits
 
-- **Before:** a hold from [Call 6](06-hold-seat.md), or a booking from [Call 9](09-book-seat.md).
+- **Before:** a hold from [Call 7](07-hold-seat.md), or a booking from [Call 10](10-book-seat.md).
 - **This call:** "I don't want this seat any more."
-- **After:** check the result with [Call 10](10-get-booking.md) if the drop is still waiting on the school.
+- **After:** check the result with [Call 11](11-get-booking.md) if the drop is still waiting on the school.
 
 ---
 
@@ -196,4 +196,4 @@ Example — past the school's last drop date:
 ## What gets recorded in S3
 
 1. `goldwire/idempotency/01J9A7K3M5P7R9T1V3X5Z7B9D1.json` — written once.
-2. A **new version** of the hold or booking record (`If-Match` on the version read) with the new state, the reason and note, and the refund figure with its policy. The receipt from Call 9 is locked and stays as it was; the drop is added to the booking's history.
+2. A **new version** of the hold or booking record (`If-Match` on the version read) with the new state, the reason and note, and the refund figure with its policy. The receipt from Call 10 is locked and stays as it was; the drop is added to the booking's history.

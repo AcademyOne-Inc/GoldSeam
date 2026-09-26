@@ -1,6 +1,6 @@
-# Call 6 — Hold a seat
+# Call 7 — Hold a seat
 
-[← Call 5 — Get person](05-get-person.md) · [Summary](README.md) · Next: [Call 7 — Get a hold →](07-get-hold.md)
+[← Call 6 — Enroll as a non-degree student](06-enroll-non-degree.md) · [Summary](README.md) · Next: [Call 8 — Get a hold →](08-get-hold.md)
 
 > **Draft.** Nothing here is live.
 
@@ -17,7 +17,7 @@ they asked to), or is told the section is **full** — that is a normal answer, 
 
 - **Before:** [Call 4](04-get-section-fees.md) gave quote `qt_01J8Z3V6N4`: $241.00, prepay, fixed until 14:33:40.
 - **This call:** "Hold me a seat in section 002 at that price."
-- **After:** pay for it → [Call 8 — GoldCard authorize](08-goldcard-authorize.md), then [Call 9 — Book the seat](09-book-seat.md). The learner can watch the clock with [Call 7](07-get-hold.md).
+- **After:** pay for it → [Call 9 — GoldCard authorize](09-goldcard-authorize.md), then [Call 10 — Book the seat](10-book-seat.md). The learner can watch the clock with [Call 8](08-get-hold.md).
 
 ---
 
@@ -112,7 +112,7 @@ GoldCard must authorize **$241.00**.
 |---|---|---|
 | `contract` / `request_id` / `as_of` | | rule version, tracking number, when the seat was taken |
 | `status` | `ok` | |
-| `hold_id` | `hld_01J8Z3XQ2K` | **the hold — send this to Call 8 and Call 9** |
+| `hold_id` | `hld_01J8Z3XQ2K` | **the hold — send this to Call 9 and Call 10** |
 | `hold_state` | `HELD` | `HELD` = a seat is yours for now · `WAITLISTED` = no seat, you are on the waitlist · `SECTION_FULL` = no seat and no waitlist place; nothing was held |
 | `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | echoed |
 | `hold_expires_at` | `2026-09-25T14:24:05Z` | book before this or the seat goes back |
@@ -155,7 +155,7 @@ exactly the reply above. No second seat.
 ```
 
 In words: first on the waitlist. Nothing to pay now. If a seat opens, this hold becomes `OFFERED` for
-24 hours (see [Call 7](07-get-hold.md)).
+24 hours (see [Call 8](08-get-hold.md)).
 
 **The last seat went; `accept_waitlist` was `false`** — `201 Created`, `hold_state: "SECTION_FULL"`,
 no `hold_id`, no `s3`, `seats_after_hold.available: 0`. Nothing was held. Pick another section.
@@ -195,7 +195,7 @@ Example — the school raised its fees after the quote:
 | 404 | `SECTION_NOT_FOUND` | `No section sec_225070_2027SP_ENGL1301_009 is held. List sections with get_sections.` | | run Call 3 |
 | 404 | `GOLDCHECK_REF_NOT_FOUND` | `No GoldCheck answer gck_9ZZ00Q is held for learner lrn_8f3a2c91d7.` | | drop it or fix it |
 | 409 | `PRICE_CHANGED` | `The school's price for section sec_225070_2027SP_ENGL1301_002 changed after quote qt_01J8Z3V6N4 was issued: was $241.00, now $256.00. Request a new quote.` | school changed its fees | new quote; show the learner the difference |
-| 409 | `ACTIVE_HOLD_EXISTS` | `Learner lrn_8f3a2c91d7 already holds a seat in ENGL 1301 for 2027-SP (hold hld_01J8Z3W1AB, section 004, expires 2026-09-25T14:15:00Z). Release it first or book it.` | holding another section of the same course | release that hold ([Call 11](11-release-seat.md)) or book it |
+| 409 | `ACTIVE_HOLD_EXISTS` | `Learner lrn_8f3a2c91d7 already holds a seat in ENGL 1301 for 2027-SP (hold hld_01J8Z3W1AB, section 004, expires 2026-09-25T14:15:00Z). Release it first or book it.` | holding another section of the same course | release that hold ([Call 12](12-release-seat.md)) or book it |
 | 409 | `ALREADY_BOOKED` | `Learner lrn_8f3a2c91d7 already has booking bkg_01J8Y9P2QR (CONFIRMED) in ENGL 1301 for 2027-SP.` | already registered in this course | nothing to do, or drop that booking first |
 | 409 | `HOLD_LIMIT_REACHED` | `Learner lrn_8f3a2c91d7 has 5 active holds, the most allowed. Book or release one first.` | | release one |
 | 409 | `SECTION_CANCELLED` | `Section 002 of ENGL 1301 (sec_225070_2027SP_ENGL1301_002) was cancelled by the school on 2026-10-14.` | | another section |

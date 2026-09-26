@@ -1,6 +1,6 @@
-# Call 8 — GoldCard authorize
+# Call 9 — GoldCard authorize
 
-[← Call 7 — Get a hold](07-get-hold.md) · [Summary](README.md) · Next: [Call 9 — Book the seat →](09-book-seat.md)
+[← Call 8 — Get a hold](08-get-hold.md) · [Summary](README.md) · Next: [Call 10 — Book the seat →](10-book-seat.md)
 
 > **Draft.** Nothing here is live. This call belongs to **GoldCard**, not GoldWire — GoldWire never
 > touches money. It is specified here so the ids passed between the services line up.
@@ -18,9 +18,9 @@ Arranges the money for a held seat.
 
 ## Where it sits
 
-- **Before:** [Call 6](06-hold-seat.md) held seat `hld_01J8Z3XQ2K` and said `amount_due_now` is $241.00.
+- **Before:** [Call 7](07-hold-seat.md) held seat `hld_01J8Z3XQ2K` and said `amount_due_now` is $241.00.
 - **This call:** "Authorize $241.00 on my Visa for that seat."
-- **After:** [Call 9 — Book the seat](09-book-seat.md) with the `goldcard_authorization_id`.
+- **After:** [Call 10 — Book the seat](10-book-seat.md) with the `goldcard_authorization_id`.
 
 The learner's card, bank account, loan or 529 plan was set up in GoldCard earlier and is referred to
 only by a **token** (`fs_…`). Card and account numbers never pass through this call.
@@ -103,8 +103,8 @@ In words: **$241.00 is authorized on the Visa ending 4242**, not yet charged. Th
 | `request_id` | `e8f9a0b1-…` | tracking number |
 | `status` | `ok` | |
 | `payment_mode` | `prepay` | echoed |
-| `goldcard_authorization_id` | `auth_7HF2Q9` | **send this to Call 9** (prepay) |
-| `goldcard_guarantee_id` | `null` | for reserve: **send this to Call 9** instead |
+| `goldcard_authorization_id` | `auth_7HF2Q9` | **send this to Call 10** (prepay) |
+| `goldcard_guarantee_id` | `null` | for reserve: **send this to Call 10** instead |
 | `hold_id` / `quote_id` | | echoed |
 | `authorized_amount` | `241.00 USD` | equals what was asked |
 | `funding_source.type` | `credit_card` | echoed |
@@ -192,8 +192,8 @@ Example — the card was declined:
 | 404 | `FUNDING_SOURCE_NOT_FOUND` | `No funding source fs_Q2w8Lk3mZ0 is on file for learner lrn_8f3a2c91d7. Add it in GoldCard first.` | card not saved, or removed | add it in GoldCard |
 | 409 | `HOLD_NOT_ACTIVE` | `Hold hld_01J8Z3XQ2K is WAITLISTED; only a HELD or OFFERED hold can be paid for.` | no seat yet | wait for `OFFERED` |
 | 409 | `HOLD_NOT_ACTIVE` | `Hold hld_01J8Z3XQ2K is RELEASED; only a HELD or OFFERED hold can be paid for.` | learner let it go | hold again |
-| 410 | `HOLD_EXPIRED` | `Hold hld_01J8Z3XQ2K expired at 2026-09-25T14:24:05Z. Hold a seat again.` | more than 20 minutes | Call 6 again |
-| 422 | `AMOUNT_MISMATCH` | `amount $214.00 does not equal the amount due now on quote qt_01J8Z3V6N4: $241.00.` | typed wrong | send the `amount_due_now` from Call 6 |
+| 410 | `HOLD_EXPIRED` | `Hold hld_01J8Z3XQ2K expired at 2026-09-25T14:24:05Z. Hold a seat again.` | more than 20 minutes | Call 7 again |
+| 422 | `AMOUNT_MISMATCH` | `amount $214.00 does not equal the amount due now on quote qt_01J8Z3V6N4: $241.00.` | typed wrong | send the `amount_due_now` from Call 7 |
 | 422 | `QUOTE_HOLD_MISMATCH` | `Quote qt_01J8Z3V6N9 is not the quote on hold hld_01J8Z3XQ2K (qt_01J8Z3V6N4).` | | send the hold's quote |
 | 422 | `PAYMENT_MODE_MISMATCH` | `Hold hld_01J8Z3XQ2K is for prepay, not reserve.` | | match the hold |
 | 422 | `FUNDING_SOURCE_NOT_ACCEPTED` | `School 225070 does not accept plan_529 through GoldCard. Accepted: credit_card, bank_ach.` | | another source |

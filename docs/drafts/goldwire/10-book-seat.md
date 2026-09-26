@@ -1,6 +1,6 @@
-# Call 9 — Book the seat
+# Call 10 — Book the seat
 
-[← Call 8 — GoldCard authorize](08-goldcard-authorize.md) · [Summary](README.md) · Next: [Call 10 — Get a booking →](10-get-booking.md)
+[← Call 9 — GoldCard authorize](09-goldcard-authorize.md) · [Summary](README.md) · Next: [Call 11 — Get a booking →](11-get-booking.md)
 
 > **Draft.** Nothing here is live.
 
@@ -19,9 +19,9 @@ GoldWire never decides the learner is registered. **Only the school's own system
 
 ## Where it sits
 
-- **Before:** [Call 5](05-get-person.md) linked the learner to their record at the school (`psl_3N8QK2WD7F`); [Call 6](06-hold-seat.md) held `hld_01J8Z3XQ2K`; [Call 8](08-goldcard-authorize.md) authorized $241.00 as `auth_7HF2Q9`.
+- **Before:** [Call 5](05-get-person.md) (or, for a new non-degree student, [Call 6](06-enroll-non-degree.md)) linked the learner to their record at the school (`psl_3N8QK2WD7F`); [Call 7](07-hold-seat.md) held `hld_01J8Z3XQ2K`; [Call 9](09-goldcard-authorize.md) authorized $241.00 as `auth_7HF2Q9`.
 - **This call:** "Register me."
-- **After:** show the confirmation. Check back any time with [Call 10 — Get a booking](10-get-booking.md). Drop with [Call 11](11-release-seat.md).
+- **After:** show the confirmation. Check back any time with [Call 11 — Get a booking](11-get-booking.md). Drop with [Call 12](12-release-seat.md).
 
 ---
 
@@ -56,8 +56,8 @@ Content-Type: application/json
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is registering | must own the hold |
 | `hold_id` | `hld_01J8Z3XQ2K` | yes | the held seat | must be `HELD` or `OFFERED`, not expired |
 | `payment_mode` | `prepay` | yes | | must match the hold |
-| `goldcard_authorization_id` | `auth_7HF2Q9` | **yes for prepay** | the money, from Call 8 | must be for this hold and the full amount due now |
-| `goldcard_guarantee_id` | *(not sent)* | **yes for reserve** | the guarantee, from Call 8 | send one or the other, never both |
+| `goldcard_authorization_id` | `auth_7HF2Q9` | **yes for prepay** | the money, from Call 9 | must be for this hold and the full amount due now |
+| `goldcard_guarantee_id` | *(not sent)* | **yes for reserve** | the guarantee, from Call 9 | send one or the other, never both |
 | `person_link_id` | `psl_3N8QK2WD7F` | yes | the learner's record at this school, from [Call 5 — Get person](05-get-person.md) | must be this learner's link at this school. The school's own person ID behind it goes only to the school and is **never returned in any reply** |
 | `attestations.prerequisites_met` | `true` | yes | the learner confirms they meet the course prerequisites | must be `true` when the section lists `prerequisite_check`; the school still checks |
 | `attestations.policies_acknowledged` | `["pol_225070_refunds_2026_27"]` | yes | the policies the learner was shown and accepted | must include the refund policy from the quote |
@@ -108,6 +108,14 @@ The school answered "registered" two seconds later:
     "capture": "on_confirmation"
   },
   "refund_policy": { "full_refund_until": "2027-02-02", "source": "pol_225070_refunds_2026_27" },
+  "term_load": {
+    "term_id": "2027-SP",
+    "credits_before": 6,
+    "credits_after": 9,
+    "load_before": "part_time",
+    "load_after": "part_time",
+    "full_time_at_credits": 12
+  },
   "s3": {
     "booking": {
       "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
@@ -131,7 +139,7 @@ $241.00 was charged to the card. Full refund if dropped by 2 February 2027.
 |---|---|---|
 | `contract` / `request_id` / `as_of` | | rule version, tracking number, when recorded |
 | `status` | `ok` | `offline` if the school did not answer (see below) |
-| `booking_id` | `bkg_01J8Z42M7R` | **the booking — use it in Calls 10 and 11** |
+| `booking_id` | `bkg_01J8Z42M7R` | **the booking — use it in Calls 11 and 12** |
 | `booking_state` | `CONFIRMED` | `CONFIRMED`, `SUBMITTED`, `WAITLISTED` or `REJECTED` |
 | `confirmation_number` | `GW-225070-7Q4K-2M` | only when `CONFIRMED`; for the learner to keep |
 | `section_id` / `hold_id` / `goldcheck_ref` | | carried through |
@@ -146,6 +154,9 @@ $241.00 was charged to the card. Full refund if dropped by 2 February 2027.
 | `payment.amount` | `241.00 USD` | |
 | `payment.funds_status` | `captured` | the money was taken because the school confirmed. Others: `authorized`, `committed`, `pending`, `released` |
 | `payment.capture` | `on_confirmation` | prepay: taken on confirmation · `at_school`: reserve, the school bills · `none`: nothing will be taken |
+| `term_load.credits_before` / `credits_after` | `6` → `9` | the learner's registered credits in the term before and after this booking (only when `CONFIRMED`) |
+| `term_load.load_before` / `load_after` | `part_time` → `part_time` | full-time or part-time by the school's threshold. A change to `full_time` can change tuition (flat-rate schools) and financial aid |
+| `term_load.full_time_at_credits` | `12` | the school's full-time threshold for that term |
 | `refund_policy` | until 2027-02-02 | |
 | `s3.booking` | `…/bookings/bkg_01J8Z42M7R.json` | the booking record |
 | `s3.receipt` | `goldwire/receipts/lrn_8f3a2c91d7/bkg_01J8Z42M7R.json` | the learner's receipt — locked, cannot be changed or deleted |
@@ -238,21 +249,21 @@ Example — the hold ran out before booking:
 | HTTP | Code | The message, as it appears | Happens when | Do this |
 |---|---|---|---|---|
 | 400 | `VALIDATION_FAILED` | `hold_id is required.` | left out (same for `learner_id`, `payment_mode`, `attestations`) | send it |
-| 400 | `VALIDATION_FAILED` | `goldcard_authorization_id is required when payment_mode is prepay.` | | send the id from Call 8 |
-| 400 | `VALIDATION_FAILED` | `goldcard_guarantee_id is required when payment_mode is reserve.` | | send the id from Call 8 |
+| 400 | `VALIDATION_FAILED` | `goldcard_authorization_id is required when payment_mode is prepay.` | | send the id from Call 9 |
+| 400 | `VALIDATION_FAILED` | `goldcard_guarantee_id is required when payment_mode is reserve.` | | send the id from Call 9 |
 | 400 | `VALIDATION_FAILED` | `Send goldcard_authorization_id or goldcard_guarantee_id, not both.` | | send only the one for the mode |
 | 400 | `VALIDATION_FAILED` | `attestations.policies_acknowledged must list at least one policy id.` | empty list | send the refund policy id |
 | 400 | `VALIDATION_FAILED` | `Unknown field 'section_id'. book_seat accepts learner_id, hold_id, payment_mode, goldcard_authorization_id, goldcard_guarantee_id, person_link_id, attestations.` | | drop it — the section comes from the hold |
 | 401 | `UNAUTHENTICATED` | `A learner token is required. Send Authorization: Bearer <token>.` | | sign in again |
 | 403 | `LEARNER_MISMATCH` | `This token belongs to a different learner than lrn_8f3a2c91d7.` | | send the matching pair |
 | 404 | `HOLD_NOT_FOUND` | `No hold hld_01J8Z3ZZ99 is held for learner lrn_8f3a2c91d7.` | | check the id |
-| 404 | `AUTHORIZATION_NOT_FOUND` | `GoldCard has no authorization auth_7HF2Q0 for learner lrn_8f3a2c91d7.` | typo, or authorized for someone else | authorize again (Call 8) |
-| 404 | `GUARANTEE_NOT_FOUND` | `GoldCard has no guarantee gtd_4KX81N for learner lrn_8f3a2c91d7.` | | Call 8 again |
-| 409 | `HOLD_ALREADY_BOOKED` | `Hold hld_01J8Z3XQ2K was already booked as bkg_01J8Z42M7R on 2026-09-25T14:11:53Z.` | booked before under a different key | read that booking (Call 10) |
+| 404 | `AUTHORIZATION_NOT_FOUND` | `GoldCard has no authorization auth_7HF2Q0 for learner lrn_8f3a2c91d7.` | typo, or authorized for someone else | authorize again (Call 9) |
+| 404 | `GUARANTEE_NOT_FOUND` | `GoldCard has no guarantee gtd_4KX81N for learner lrn_8f3a2c91d7.` | | Call 9 again |
+| 409 | `HOLD_ALREADY_BOOKED` | `Hold hld_01J8Z3XQ2K was already booked as bkg_01J8Z42M7R on 2026-09-25T14:11:53Z.` | booked before under a different key | read that booking (Call 11) |
 | 409 | `HOLD_NOT_ACTIVE` | `Hold hld_01J8Z3XQ2K is WAITLISTED; only a HELD or OFFERED hold can be booked.` | | wait for a seat |
 | 409 | `HOLD_NOT_ACTIVE` | `Hold hld_01J8Z3XQ2K is RELEASED; only a HELD or OFFERED hold can be booked.` | | hold again |
-| 410 | `HOLD_EXPIRED` | `Hold hld_01J8Z3XQ2K expired at 2026-09-25T14:24:05Z. The seat was released. Hold a seat again.` | more than 20 minutes | Call 6 again; release the old authorization |
-| 410 | `AUTHORIZATION_EXPIRED` | `Authorization auth_7HF2Q9 expired at 2026-10-02T14:06:30Z. Authorize again with GoldCard.` | | Call 8 again |
+| 410 | `HOLD_EXPIRED` | `Hold hld_01J8Z3XQ2K expired at 2026-09-25T14:24:05Z. The seat was released. Hold a seat again.` | more than 20 minutes | Call 7 again; release the old authorization |
+| 410 | `AUTHORIZATION_EXPIRED` | `Authorization auth_7HF2Q9 expired at 2026-10-02T14:06:30Z. Authorize again with GoldCard.` | | Call 9 again |
 | 422 | `PAYMENT_MISMATCH` | `Authorization auth_7HF2Q9 is for hld_01J8Z3W1AB / $186.00; this hold is hld_01J8Z3XQ2K / $241.00.` | authorization from another hold | authorize this hold |
 | 422 | `PAYMENT_MODE_MISMATCH` | `Hold hld_01J8Z3XQ2K is for prepay, not reserve.` | | match the hold |
 | 422 | `ATTESTATION_REQUIRED` | `Section sec_225070_2027SP_ENGL1301_002 requires a prerequisite check. attestations.prerequisites_met must be true; the school will verify it.` | sent `false` | ask the learner; if they don't meet them, don't book |

@@ -1,6 +1,6 @@
-# Call 10 — Get a booking
+# Call 11 — Get a booking
 
-[← Call 9 — Book the seat](09-book-seat.md) · [Summary](README.md) · Next: [Call 11 — Release a seat →](11-release-seat.md)
+[← Call 10 — Book the seat](10-book-seat.md) · [Summary](README.md) · Next: [Call 12 — Release a seat →](12-release-seat.md)
 
 > **Draft.** Nothing here is live.
 
@@ -14,9 +14,9 @@ It changes nothing.
 
 ## Where it sits
 
-- **Before:** [Call 9](09-book-seat.md) made booking `bkg_01J8Z42M7R`.
+- **Before:** [Call 10](10-book-seat.md) made booking `bkg_01J8Z42M7R`.
 - **This call:** "What is the state of my booking?"
-- **After:** nothing, or [Call 11](11-release-seat.md) to drop.
+- **After:** nothing, or [Call 12](12-release-seat.md) to drop.
 
 ---
 
@@ -34,7 +34,7 @@ Accept: application/json
 
 | Field | This example | Required? | What it means | Rules |
 |---|---|---|---|---|
-| `booking_id` (in the path) | `bkg_01J8Z42M7R` | yes | the booking, from Call 9 | a `bkg_` id |
+| `booking_id` (in the path) | `bkg_01J8Z42M7R` | yes | the booking, from Call 10 | a `bkg_` id |
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is asking | must own the booking |
 | `Authorization` (header) | `Bearer eyJ…` | yes | sign-in token | must belong to `lrn_8f3a2c91d7` |
 
@@ -44,7 +44,7 @@ Accept: application/json
 
 The reply also carries the header `ETag: "e4d29d0e2b7c41a5f6"` — the version of the record read.
 
-Here the learner paid with a 529 plan instead of the card (the second example in [Call 8](08-goldcard-authorize.md#other-replies-you-can-get-not-errors)), so the school answered "pending" first and confirmed when the plan paid:
+Here the learner paid with a 529 plan instead of the card (the second example in [Call 9](09-goldcard-authorize.md#other-replies-you-can-get-not-errors)), so the school answered "pending" first and confirmed when the plan paid:
 
 ```json
 {

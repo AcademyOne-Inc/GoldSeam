@@ -1,6 +1,6 @@
-# Call 7 — Get a hold
+# Call 8 — Get a hold
 
-[← Call 6 — Hold a seat](06-hold-seat.md) · [Summary](README.md) · Next: [Call 8 — GoldCard authorize →](08-goldcard-authorize.md)
+[← Call 7 — Hold a seat](07-hold-seat.md) · [Summary](README.md) · Next: [Call 9 — GoldCard authorize →](09-goldcard-authorize.md)
 
 > **Draft.** Nothing here is live.
 
@@ -13,9 +13,9 @@ It changes nothing.
 
 ## Where it sits
 
-- **Before:** [Call 6](06-hold-seat.md) made hold `hld_01J8Z3XQ2K`, expiring 14:24:05.
+- **Before:** [Call 7](07-hold-seat.md) made hold `hld_01J8Z3XQ2K`, expiring 14:24:05.
 - **This call:** "Is my seat still held? How long do I have?"
-- **After:** keep going with [Call 8](08-goldcard-authorize.md) and [Call 9](09-book-seat.md) — or, if the hold expired, start again at [Call 6](06-hold-seat.md).
+- **After:** keep going with [Call 9](09-goldcard-authorize.md) and [Call 10](10-book-seat.md) — or, if the hold expired, start again at [Call 7](07-hold-seat.md).
 
 ---
 
@@ -33,7 +33,7 @@ Accept: application/json
 
 | Field | This example | Required? | What it means | Rules |
 |---|---|---|---|---|
-| `hold_id` (in the path) | `hld_01J8Z3XQ2K` | yes | the hold, from Call 6 | an `hld_` id |
+| `hold_id` (in the path) | `hld_01J8Z3XQ2K` | yes | the hold, from Call 7 | an `hld_` id |
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is asking | must own the hold |
 | `Authorization` (header) | `Bearer eyJ…` | yes | sign-in token | must belong to `lrn_8f3a2c91d7` |
 
@@ -82,7 +82,7 @@ In words: still held, **15 minutes left**.
 | `source.kind` | `goldwire_ledger` | read from GoldWire's own record, not from the school |
 | `hold_id` | `hld_01J8Z3XQ2K` | |
 | `hold_state` | `HELD` | see the table below |
-| `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | as recorded in Call 6 |
+| `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | as recorded in Call 7 |
 | `hold_expires_at` | `2026-09-25T14:24:05Z` | for `HELD` and `OFFERED` |
 | `seconds_left` | `900` | until expiry; never negative; `null` when not `HELD`/`OFFERED` |
 | `waitlist_position` | `null` | for `WAITLISTED` |
@@ -94,11 +94,11 @@ In words: still held, **15 minutes left**.
 
 | `hold_state` | Means | What the learner does |
 |---|---|---|
-| `HELD` | the seat is theirs until `hold_expires_at` | pay (Call 8) and book (Call 9) |
+| `HELD` | the seat is theirs until `hold_expires_at` | pay (Call 9) and book (Call 10) |
 | `WAITLISTED` | on the waitlist; no seat yet | wait; check back |
-| `OFFERED` | a seat opened for them from the waitlist; held **24 hours** | pay (Call 8) and book (Call 9) |
-| `BOOKED` | turned into a booking | read it with [Call 10](10-get-booking.md) using `booking_id` |
-| `EXPIRED` | time ran out; the seat went back | hold again (Call 6) |
+| `OFFERED` | a seat opened for them from the waitlist; held **24 hours** | pay (Call 9) and book (Call 10) |
+| `BOOKED` | turned into a booking | read it with [Call 11](11-get-booking.md) using `booking_id` |
+| `EXPIRED` | time ran out; the seat went back | hold again (Call 7) |
 | `RELEASED` | the learner let it go | nothing |
 
 ---
@@ -133,7 +133,7 @@ In words: still held, **15 minutes left**.
 }
 ```
 
-The learner is also notified. If the price changed since the quote, Call 8 will say so and a new
+The learner is also notified. If the price changed since the quote, Call 9 will say so and a new
 quote is needed.
 
 **The hold ran out** — `hold_state: "EXPIRED"`, `seconds_left: null`, and `history` gains

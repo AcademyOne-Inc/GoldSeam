@@ -1,6 +1,6 @@
-# Call 12 — Record the school's answer (internal)
+# Call 13 — Record the school's answer (internal)
 
-[← Call 11 — Release a seat](11-release-seat.md) · [Summary](README.md)
+[← Call 12 — Release a seat](12-release-seat.md) · [Summary](README.md)
 
 > **Draft.** Nothing here is live. **Learners and their apps never call this.** It is called only by
 > the school adapter — the piece that connects GoldWire to one school's registration system.
@@ -11,14 +11,14 @@ Carries **the school's later answer** onto a booking: the learner was registered
 waitlisted, dropped — or the school corrected the price (for example, it re-rated the learner from
 in-district to out-of-state). GoldWire moves the booking and the money to match and tells the learner.
 
-This is how a booking that came back `SUBMITTED` in [Call 9](09-book-seat.md) becomes `CONFIRMED`
+This is how a booking that came back `SUBMITTED` in [Call 10](10-book-seat.md) becomes `CONFIRMED`
 days later.
 
 ## Where it sits
 
 - **Before:** a booking is `SUBMITTED` (the school is waiting for the 529 payment) or `DROP_REQUESTED`.
 - **This call:** the school's system says "registered" on 9 October.
-- **After:** the learner sees it in [Call 10 — Get a booking](10-get-booking.md) and gets a notification.
+- **After:** the learner sees it in [Call 11 — Get a booking](11-get-booking.md) and gets a notification.
 
 ---
 
@@ -66,14 +66,14 @@ Content-Type: application/json
 | `SUBMITTED` | `pending` | stays `SUBMITTED`; reason added | unchanged | "Your registration is pending: {reason}." |
 | `SUBMITTED` | `waitlisted` | `WAITLISTED` | authorization released | "You're number {n} on the waitlist." |
 | `SUBMITTED` | `refused` | `REJECTED`; seat returned | authorization or guarantee released | "Your registration was not accepted: {reason}." |
-| `CONFIRMED` or `DROP_REQUESTED` | `dropped` | `DROPPED` | refund per the school's policy, as in [Call 11](11-release-seat.md) | "You've been dropped from ENGL 1301. Refund: {amount}." |
+| `CONFIRMED` or `DROP_REQUESTED` | `dropped` | `DROPPED` | refund per the school's policy, as in [Call 12](12-release-seat.md) | "You've been dropped from ENGL 1301. Refund: {amount}." |
 | `SUBMITTED` or `CONFIRMED` | `re_rated` | unchanged; a price change is added | the learner must **approve** the difference in GoldCard; nothing more is charged without approval | "The school changed your price from {old} to {new}: {reason}. Please review." |
 
 ---
 
 ## The reply — `200 OK`
 
-The full booking, exactly as [Call 10](10-get-booking.md) returns it, now at `CONFIRMED`:
+The full booking, exactly as [Call 11](11-get-booking.md) returns it, now at `CONFIRMED`:
 
 ```json
 {
@@ -108,7 +108,7 @@ The full booking, exactly as [Call 10](10-get-booking.md) returns it, now at `CO
 }
 ```
 
-Every field is explained on the [Call 10 page](10-get-booking.md#every-field-you-get-back).
+Every field is explained on the [Call 11 page](11-get-booking.md#every-field-you-get-back).
 
 **A re-rate** — the school found the learner is out-of-district (`answer: "re_rated"`,
 `new_total: 367.00`, `reason: "Residency documents show an out-of-district address; in-state rate applies."`)

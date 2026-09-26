@@ -21,7 +21,7 @@
 
 ---
 
-## What an adapter must do — eight operations
+## What an adapter must do — nine operations
 
 Each GoldWire call uses one or more of these. The input and output are always in GoldWire terms.
 
@@ -32,9 +32,10 @@ Each GoldWire call uses one or more of these. The input and output are always in
 | A3 | `list_sections` | [Call 3](03-get-sections.md) | term, course, filters | sections, meetings, **live seat counts** | live (8-second limit), or cached no more than 60 seconds |
 | A4 | `get_fee_rules` | [Call 4](04-get-section-fees.md) | term, course, section | tuition rates and fees | daily; most schools' fees come from their **published** policies in CourseShelf instead |
 | A5 | `find_person` | [Call 5](05-get-person.md) | name, date of birth, contact details, school ID if known | match result and the school's person ID | live |
-| A6 | `register` | [Call 9](09-book-seat.md) | school person ID, term, native section key | the school's answer | live, with retries |
-| A7 | `drop` / `waitlist_add` / `waitlist_remove` | [Calls 6](06-hold-seat.md), [11](11-release-seat.md) | school person ID, native section key | the school's answer | live, with retries |
-| A8 | `push_answer` | [Call 12](12-record-school-answer.md) | — (the SIS side starts it) | a later answer on a booking | when the school decides |
+| A6 | `register` | [Call 10](10-book-seat.md) | school person ID, term, native section key | the school's answer | live, with retries |
+| A7 | `drop` / `waitlist_add` / `waitlist_remove` | [Calls 7](07-hold-seat.md), [12](12-release-seat.md) | school person ID, native section key | the school's answer | live, with retries |
+| A8 | `push_answer` | [Call 13](13-record-school-answer.md) | — (the SIS side starts it) | a later answer on a booking | when the school decides |
+| A9 | `create_non_degree_student` | [Call 6](06-enroll-non-degree.md) | name, date of birth, contact, address, first term, reason, residency | created / pending review / refused / already known, and the new person ID | live, with retries |
 
 ---
 
@@ -44,7 +45,7 @@ Each GoldWire call uses one or more of these. The input and output are always in
 |---|---|---|
 | **Vendor API** | the school licenses its vendor's integration platform | the adapter calls the vendor's published API. Preferred: supported by the vendor, respects the SIS's own business rules (prerequisites, holds, time conflicts) |
 | **Read views + vendor API for writes** | the API is slow or limited for searching | read-only database views feed A1–A4; registration (A6, A7) still goes through the vendor's own registration API so the SIS's rules run. **GoldWire never writes to SIS tables directly** |
-| **Homegrown contract** | a homegrown or niche SIS | the school exposes the eight operations as a small web service in exactly the GoldWire shapes on these pages. For read-only schools, nightly files for A1–A2 plus a live seat endpoint for A3 are enough to list sections (`bookable: false` until A6 exists) |
+| **Homegrown contract** | a homegrown or niche SIS | the school exposes the nine operations as a small web service in exactly the GoldWire shapes on these pages. For read-only schools, nightly files for A1–A2 plus a live seat endpoint for A3 are enough to list sections (`bookable: false` until A6 exists) |
 
 **Integration platforms by vendor** (to confirm per school):
 
@@ -110,6 +111,9 @@ configuration holds each school's actual codes.
 | GoldWire | Banner | PeopleSoft Campus Solutions | Colleague | Workday Student |
 |---|---|---|---|---|
 | `school_person_id` | Banner ID (`SPRIDEN_ID`) e.g. `A00482913` | `EMPLID` e.g. `1048291` | Colleague person ID e.g. `0482913` | Student ID e.g. `S0048291` |
+| `student_type` `degree_seeking` / `non_degree` | student type and degree/program on the general student record | academic program on the student's career (a non-degree program code such as `NDEG`) | academic program (a non-degree program) | Program of Study / Student Type |
+| `admission_status` | admissions application and decision | admission application and program action | application status | Admission / Application status |
+| `load` `full_time` / `part_time` | computed from term credits against the school's rule | academic load, computed per term | load computed per term | Academic Load |
 | person lookup ([Call 5](05-get-person.md)) | common matching rules / Ethos `person-matching-requests` | Search/Match | Ethos `person-matching-requests` | find-student / matching services |
 
 ---
@@ -149,7 +153,7 @@ One school's adapter configuration — the only place vendor codes live. This is
   "days": { "M": "MON", "T": "TUE", "W": "WED", "R": "THU", "F": "FRI", "S": "SAT", "U": "SUN" },
   "time_format": "HHMM",
   "person_id_format": "^A\\d{8}$",
-  "registration": { "supports_register": true, "supports_waitlist": true, "new_person_allowed": false }
+  "registration": { "supports_register": true, "supports_waitlist": true, "non_degree_enrollment": true, "non_degree_credit_limit": 12, "full_time_at_credits": { "FA": 12, "SP": 12, "SU": 6 } }
 }
 ```
 
@@ -172,4 +176,4 @@ One school's adapter configuration — the only place vendor codes live. This is
 | timeout, connection refused, SIS maintenance window | `503 SCHOOL_OFFLINE` |
 | authentication to the SIS failed | `503 SCHOOL_OFFLINE` to the learner; GoldWire staff are alerted |
 | a code with no mapping | the item left out, listed in `not_held` |
-| the SIS rejects a registration (prerequisite, hold, time conflict, closed) | not an error — `booking_state: REJECTED` with the school's reason, verbatim ([Call 9](09-book-seat.md)) |
+| the SIS rejects a registration (prerequisite, hold, time conflict, closed) | not an error — `booking_state: REJECTED` with the school's reason, verbatim ([Call 10](10-book-seat.md)) |

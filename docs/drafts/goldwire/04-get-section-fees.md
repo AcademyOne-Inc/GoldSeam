@@ -21,7 +21,7 @@ It records the quote in S3 so the price can be proved later. Asking again with t
 
 - **Before:** [Call 3](03-get-sections.md) showed section 002 has 2 seats: `sec_225070_2027SP_ENGL1301_002`.
 - **This call:** "What does a seat in section 002 cost if I prepay, as an in-district student?"
-- **After:** the learner accepts the price → [Call 6 — Hold a seat](06-hold-seat.md) with the `quote_id`.
+- **After:** the learner accepts the price → [Call 7 — Hold a seat](07-hold-seat.md) with the `quote_id`.
 
 ---
 
@@ -107,7 +107,7 @@ The price is fixed until **14:33:40**. Full refund if dropped by **2 February 20
 | `source.policy_id` | `pol_225070_tuition_2026_27` | the school's tuition policy the price came from |
 | `source.edition` / `.published` | `2026–27` / `2026-06-01` | which edition, and when the school published it |
 | `not_held` | `[]` | any fee the school names but doesn't price, e.g. `{ "what": "lab fee" }` |
-| `quote_id` | `qt_01J8Z3V6N4` | **the price, fixed — send this to Call 6** |
+| `quote_id` | `qt_01J8Z3V6N4` | **the price, fixed — send this to Call 7** |
 | `quote_expires_at` | `2026-09-25T14:33:40Z` | 30 minutes from now; after this, ask again |
 | `section_id` | `sec_225070_2027SP_ENGL1301_002` | echoed |
 | `payment_mode` | `prepay` | echoed |
@@ -121,11 +121,11 @@ The price is fixed until **14:33:40**. Full refund if dropped by **2 February 20
 | `totals.goldwire` | `0.00` | GoldWire's fee |
 | `totals.total` | `241.00` | everything |
 | `totals.totals_complete` | `true` | `false` would mean a fee is missing from the school's record and the total is short |
-| `due.now` | `241.00` | **what GoldCard must authorize in Call 8** |
+| `due.now` | `241.00` | **what GoldCard must authorize in Call 9** |
 | `due.at_school` | `0.00` | what the school will bill later |
 | `due.school_due_date` | `null` | the school's payment due date — used for reserve |
 | `refund_policy.full_refund_until` | `2027-02-02` | per the school's refund policy |
-| `refund_policy.source` | `pol_225070_refunds_2026_27` | the policy — the learner must acknowledge it in Call 9 |
+| `refund_policy.source` | `pol_225070_refunds_2026_27` | the policy — the learner must acknowledge it in Call 10 |
 | `no_show_fee` | `null` | the school publishes no no-show fee. If it did: `{ "amount": {…}, "applies_after": "2027-01-19", "source": "pol_…" }` |
 | `s3.key` / `s3.etag` | `goldwire/225070/…/quotes/qt_01J8Z3V6N4.json` | where the quote is recorded |
 
