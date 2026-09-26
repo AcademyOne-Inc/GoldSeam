@@ -1,6 +1,6 @@
-# Call 8 — Release a seat
+# Call 11 — Release a seat
 
-[← Call 7 — Get a booking](07-get-booking.md) · [Summary](README.md) · Next: [Call 9 — Record the school's answer →](09-record-school-answer.md)
+[← Call 10 — Get a booking](10-get-booking.md) · [Summary](README.md) · Next: [Call 12 — Record the school's answer →](12-record-school-answer.md)
 
 > **Draft.** Nothing here is live.
 
@@ -18,9 +18,9 @@ policy says and never promises more.
 
 ## Where it sits
 
-- **Before:** a hold from [Call 3](03-hold-seat.md), or a booking from [Call 6](06-book-seat.md).
+- **Before:** a hold from [Call 6](06-hold-seat.md), or a booking from [Call 9](09-book-seat.md).
 - **This call:** "I don't want this seat any more."
-- **After:** check the result with [Call 7](07-get-booking.md) if the drop is still waiting on the school.
+- **After:** check the result with [Call 10](10-get-booking.md) if the drop is still waiting on the school.
 
 ---
 
@@ -90,7 +90,7 @@ Content-Type: application/json
   "fee_due": null,
   "seats_after_release": { "capacity": 25, "enrolled": 24, "held": 0, "available": 1 },
   "s3": {
-    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
+    "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
     "etag": "\"a1b29d0e2b7c41a5f6\"",
     "version_id": "9Lm0nOp1qRs2tUv3.wXy4zA5bC6dE7fG"
   }
@@ -137,7 +137,7 @@ returned to the card through GoldCard.
   "refund": { "amount": null, "percent": null, "source": null, "paid_by": null },
   "fee_due": null,
   "seats_after_release": { "capacity": 25, "enrolled": 21, "held": 2, "available": 2 },
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"b2c39d0e2b7c41a5f6\"", "version_id": "Rs3tUv4wXy5zA6bC.dE7fG8hI9jK0lM1" }
+  "s3": { "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"b2c39d0e2b7c41a5f6\"", "version_id": "Rs3tUv4wXy5zA6bC.dE7fG8hI9jK0lM1" }
 }
 ```
 
@@ -196,4 +196,4 @@ Example — past the school's last drop date:
 ## What gets recorded in S3
 
 1. `goldwire/idempotency/01J9A7K3M5P7R9T1V3X5Z7B9D1.json` — written once.
-2. A **new version** of the hold or booking record (`If-Match` on the version read) with the new state, the reason and note, and the refund figure with its policy. The receipt from Call 6 is locked and stays as it was; the drop is added to the booking's history.
+2. A **new version** of the hold or booking record (`If-Match` on the version read) with the new state, the reason and note, and the refund figure with its policy. The receipt from Call 9 is locked and stays as it was; the drop is added to the booking's history.

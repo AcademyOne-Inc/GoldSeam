@@ -1,6 +1,6 @@
-# Call 4 — Get a hold
+# Call 7 — Get a hold
 
-[← Call 3 — Hold a seat](03-hold-seat.md) · [Summary](README.md) · Next: [Call 5 — GoldCard authorize →](05-goldcard-authorize.md)
+[← Call 6 — Hold a seat](06-hold-seat.md) · [Summary](README.md) · Next: [Call 8 — GoldCard authorize →](08-goldcard-authorize.md)
 
 > **Draft.** Nothing here is live.
 
@@ -13,9 +13,9 @@ It changes nothing.
 
 ## Where it sits
 
-- **Before:** [Call 3](03-hold-seat.md) made hold `hld_01J8Z3XQ2K`, expiring 14:24:05.
+- **Before:** [Call 6](06-hold-seat.md) made hold `hld_01J8Z3XQ2K`, expiring 14:24:05.
 - **This call:** "Is my seat still held? How long do I have?"
-- **After:** keep going with [Call 5](05-goldcard-authorize.md) and [Call 6](06-book-seat.md) — or, if the hold expired, start again at [Call 3](03-hold-seat.md).
+- **After:** keep going with [Call 8](08-goldcard-authorize.md) and [Call 9](09-book-seat.md) — or, if the hold expired, start again at [Call 6](06-hold-seat.md).
 
 ---
 
@@ -33,7 +33,7 @@ Accept: application/json
 
 | Field | This example | Required? | What it means | Rules |
 |---|---|---|---|---|
-| `hold_id` (in the path) | `hld_01J8Z3XQ2K` | yes | the hold, from Call 3 | an `hld_` id |
+| `hold_id` (in the path) | `hld_01J8Z3XQ2K` | yes | the hold, from Call 6 | an `hld_` id |
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is asking | must own the hold |
 | `Authorization` (header) | `Bearer eyJ…` | yes | sign-in token | must belong to `lrn_8f3a2c91d7` |
 
@@ -65,7 +65,7 @@ Read at 14:09:05, five minutes after the hold was taken:
     { "at": "2026-09-25T14:04:05Z", "state": "HELD", "by": "learner" }
   ],
   "s3": {
-    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json",
+    "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json",
     "etag": "\"a90b9d0e2b7c41a5f6\"",
     "version_id": "Yk2P0sQz8Rr1uT4vW7xA.bC3dE6fG9hJ"
   }
@@ -82,7 +82,7 @@ In words: still held, **15 minutes left**.
 | `source.kind` | `goldwire_ledger` | read from GoldWire's own record, not from the school |
 | `hold_id` | `hld_01J8Z3XQ2K` | |
 | `hold_state` | `HELD` | see the table below |
-| `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | as recorded in Call 3 |
+| `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | as recorded in Call 6 |
 | `hold_expires_at` | `2026-09-25T14:24:05Z` | for `HELD` and `OFFERED` |
 | `seconds_left` | `900` | until expiry; never negative; `null` when not `HELD`/`OFFERED` |
 | `waitlist_position` | `null` | for `WAITLISTED` |
@@ -94,11 +94,11 @@ In words: still held, **15 minutes left**.
 
 | `hold_state` | Means | What the learner does |
 |---|---|---|
-| `HELD` | the seat is theirs until `hold_expires_at` | pay (Call 5) and book (Call 6) |
+| `HELD` | the seat is theirs until `hold_expires_at` | pay (Call 8) and book (Call 9) |
 | `WAITLISTED` | on the waitlist; no seat yet | wait; check back |
-| `OFFERED` | a seat opened for them from the waitlist; held **24 hours** | pay (Call 5) and book (Call 6) |
-| `BOOKED` | turned into a booking | read it with [Call 7](07-get-booking.md) using `booking_id` |
-| `EXPIRED` | time ran out; the seat went back | hold again (Call 3) |
+| `OFFERED` | a seat opened for them from the waitlist; held **24 hours** | pay (Call 8) and book (Call 9) |
+| `BOOKED` | turned into a booking | read it with [Call 10](10-get-booking.md) using `booking_id` |
+| `EXPIRED` | time ran out; the seat went back | hold again (Call 6) |
 | `RELEASED` | the learner let it go | nothing |
 
 ---
@@ -129,11 +129,11 @@ In words: still held, **15 minutes left**.
     { "at": "2026-09-25T14:04:05Z", "state": "WAITLISTED", "by": "learner" },
     { "at": "2026-10-03T16:15:00Z", "state": "OFFERED",    "by": "goldwire" }
   ],
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"c01d9d0e2b7c41a5f6\"", "version_id": "Qm7R2sT5uV8wX1yZ.aB4cD7eF0gH3iJ" }
+  "s3": { "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"c01d9d0e2b7c41a5f6\"", "version_id": "Qm7R2sT5uV8wX1yZ.aB4cD7eF0gH3iJ" }
 }
 ```
 
-The learner is also notified. If the price changed since the quote, Call 5 will say so and a new
+The learner is also notified. If the price changed since the quote, Call 8 will say so and a new
 quote is needed.
 
 **The hold ran out** — `hold_state: "EXPIRED"`, `seconds_left: null`, and `history` gains

@@ -1,6 +1,6 @@
-# Call 3 — Hold a seat
+# Call 6 — Hold a seat
 
-[← Call 2 — Get section fees](02-get-section-fees.md) · [Summary](README.md) · Next: [Call 4 — Get a hold →](04-get-hold.md)
+[← Call 5 — Get person](05-get-person.md) · [Summary](README.md) · Next: [Call 7 — Get a hold →](07-get-hold.md)
 
 > **Draft.** Nothing here is live.
 
@@ -15,9 +15,9 @@ they asked to), or is told the section is **full** — that is a normal answer, 
 
 ## Where it sits
 
-- **Before:** [Call 2](02-get-section-fees.md) gave quote `qt_01J8Z3V6N4`: $241.00, prepay, fixed until 14:33:40.
+- **Before:** [Call 4](04-get-section-fees.md) gave quote `qt_01J8Z3V6N4`: $241.00, prepay, fixed until 14:33:40.
 - **This call:** "Hold me a seat in section 002 at that price."
-- **After:** pay for it → [Call 5 — GoldCard authorize](05-goldcard-authorize.md), then [Call 6 — Book the seat](06-book-seat.md). The learner can watch the clock with [Call 4](04-get-hold.md).
+- **After:** pay for it → [Call 8 — GoldCard authorize](08-goldcard-authorize.md), then [Call 9 — Book the seat](09-book-seat.md). The learner can watch the clock with [Call 7](07-get-hold.md).
 
 ---
 
@@ -52,7 +52,7 @@ Content-Type: application/json
 | `Authorization` (header) | `Bearer eyJ…` | yes | the learner's sign-in token | must belong to `lrn_8f3a2c91d7` |
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is holding | must own the quote |
 | `section_id` | `sec_225070_2027SP_ENGL1301_002` | yes | which section | must be the quote's section |
-| `quote_id` | `qt_01J8Z3V6N4` | yes | the fixed price from Call 2 | must not be expired; must have a price (residency set) |
+| `quote_id` | `qt_01J8Z3V6N4` | yes | the fixed price from Call 4 | must not be expired; must have a price (residency set) |
 | `payment_mode` | `prepay` | yes | how it will be paid | must match the quote |
 | `goldcheck_ref` | `gck_5TR20P` | recommended | the GoldCheck answer the learner relied on | kept with the hold and the booking; not re-checked |
 | `accept_waitlist` | `true` | no (default `false`) | if the section just filled, put me on the waitlist | `true` / `false` |
@@ -97,7 +97,7 @@ No other fields are accepted.
     "amount_due_now": { "amount": "241.00", "currency": "USD" }
   },
   "s3": {
-    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json",
+    "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json",
     "etag": "\"a90b9d0e2b7c41a5f6\""
   }
 }
@@ -112,7 +112,7 @@ GoldCard must authorize **$241.00**.
 |---|---|---|
 | `contract` / `request_id` / `as_of` | | rule version, tracking number, when the seat was taken |
 | `status` | `ok` | |
-| `hold_id` | `hld_01J8Z3XQ2K` | **the hold — send this to Call 5 and Call 6** |
+| `hold_id` | `hld_01J8Z3XQ2K` | **the hold — send this to Call 8 and Call 9** |
 | `hold_state` | `HELD` | `HELD` = a seat is yours for now · `WAITLISTED` = no seat, you are on the waitlist · `SECTION_FULL` = no seat and no waitlist place; nothing was held |
 | `section_id` / `quote_id` / `payment_mode` / `goldcheck_ref` | | echoed |
 | `hold_expires_at` | `2026-09-25T14:24:05Z` | book before this or the seat goes back |
@@ -150,12 +150,12 @@ exactly the reply above. No second seat.
   "waitlist_full": null,
   "seats_after_hold": { "capacity": 25, "enrolled": 23, "held": 2, "available": 0 },
   "next": { "service": null, "payment_mode": "prepay", "amount_due_now": { "amount": "0.00", "currency": "USD" } },
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"a90b9d0e2b7c41a5f6\"" }
+  "s3": { "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json", "etag": "\"a90b9d0e2b7c41a5f6\"" }
 }
 ```
 
 In words: first on the waitlist. Nothing to pay now. If a seat opens, this hold becomes `OFFERED` for
-24 hours (see [Call 4](04-get-hold.md)).
+24 hours (see [Call 7](07-get-hold.md)).
 
 **The last seat went; `accept_waitlist` was `false`** — `201 Created`, `hold_state: "SECTION_FULL"`,
 no `hold_id`, no `s3`, `seats_after_hold.available: 0`. Nothing was held. Pick another section.
@@ -192,15 +192,15 @@ Example — the school raised its fees after the quote:
 | 401 | `UNAUTHENTICATED` | `A learner token is required. Send Authorization: Bearer <token>.` | | sign in again |
 | 403 | `LEARNER_MISMATCH` | `This token belongs to a different learner than lrn_8f3a2c91d7.` | | send the matching pair |
 | 404 | `QUOTE_NOT_FOUND` | `No quote qt_01J8Z3V6N9 is held for learner lrn_8f3a2c91d7.` | wrong id, or another learner's quote | get a new quote |
-| 404 | `SECTION_NOT_FOUND` | `No section sec_225070_2027SP_ENGL1301_009 is held. List sections with get_section_openings.` | | run Call 1 |
+| 404 | `SECTION_NOT_FOUND` | `No section sec_225070_2027SP_ENGL1301_009 is held. List sections with get_sections.` | | run Call 3 |
 | 404 | `GOLDCHECK_REF_NOT_FOUND` | `No GoldCheck answer gck_9ZZ00Q is held for learner lrn_8f3a2c91d7.` | | drop it or fix it |
 | 409 | `PRICE_CHANGED` | `The school's price for section sec_225070_2027SP_ENGL1301_002 changed after quote qt_01J8Z3V6N4 was issued: was $241.00, now $256.00. Request a new quote.` | school changed its fees | new quote; show the learner the difference |
-| 409 | `ACTIVE_HOLD_EXISTS` | `Learner lrn_8f3a2c91d7 already holds a seat in ENGL 1301 for 2027SP (hold hld_01J8Z3W1AB, section 004, expires 2026-09-25T14:15:00Z). Release it first or book it.` | holding another section of the same course | release that hold ([Call 8](08-release-seat.md)) or book it |
-| 409 | `ALREADY_BOOKED` | `Learner lrn_8f3a2c91d7 already has booking bkg_01J8Y9P2QR (CONFIRMED) in ENGL 1301 for 2027SP.` | already registered in this course | nothing to do, or drop that booking first |
+| 409 | `ACTIVE_HOLD_EXISTS` | `Learner lrn_8f3a2c91d7 already holds a seat in ENGL 1301 for 2027-SP (hold hld_01J8Z3W1AB, section 004, expires 2026-09-25T14:15:00Z). Release it first or book it.` | holding another section of the same course | release that hold ([Call 11](11-release-seat.md)) or book it |
+| 409 | `ALREADY_BOOKED` | `Learner lrn_8f3a2c91d7 already has booking bkg_01J8Y9P2QR (CONFIRMED) in ENGL 1301 for 2027-SP.` | already registered in this course | nothing to do, or drop that booking first |
 | 409 | `HOLD_LIMIT_REACHED` | `Learner lrn_8f3a2c91d7 has 5 active holds, the most allowed. Book or release one first.` | | release one |
 | 409 | `SECTION_CANCELLED` | `Section 002 of ENGL 1301 (sec_225070_2027SP_ENGL1301_002) was cancelled by the school on 2026-10-14.` | | another section |
 | 409 | `SECTION_NOT_BOOKABLE` | `Section sec_225070_2027SP_ENGL1301_002 cannot be booked through GoldWire: registration closed on 2027-01-26.` | | contact the school |
-| 410 | `QUOTE_EXPIRED` | `Quote qt_01J8Z3V6N4 expired at 2026-09-25T14:33:40Z. Request a new quote for section sec_225070_2027SP_ENGL1301_002.` | more than 30 minutes since Call 2 | new quote |
+| 410 | `QUOTE_EXPIRED` | `Quote qt_01J8Z3V6N4 expired at 2026-09-25T14:33:40Z. Request a new quote for section sec_225070_2027SP_ENGL1301_002.` | more than 30 minutes since Call 4 | new quote |
 | 422 | `QUOTE_SECTION_MISMATCH` | `Quote qt_01J8Z3V6N4 is for section sec_225070_2027SP_ENGL1301_002, not sec_225070_2027SP_ENGL1301_005.` | quote from one section, hold on another | quote the section you want |
 | 422 | `PAYMENT_MODE_MISMATCH` | `Quote qt_01J8Z3V6N4 was priced for prepay, not reserve. Request a quote for reserve.` | changed mind about how to pay | new quote |
 | 422 | `QUOTE_HAS_NO_PRICE` | `Quote request for section sec_225070_2027SP_ENGL1301_002 had residency unknown, so no price was fixed. Request a quote with residency set.` | | new quote with residency |
@@ -215,7 +215,7 @@ Example — the school raised its fees after the quote:
 Two files, each written once (`If-None-Match: *`):
 
 1. `goldwire/idempotency/01J8Z3XH7TQ5W2A9R6C4M0PBNE.json` — the key, a fingerprint of the request body, and the reply. This is what makes a retry return the same answer.
-2. `goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json` — the hold: learner, section, quote, payment mode, GoldCheck ref, state `HELD`, expiry.
+2. `goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json` — the hold: learner, section, quote, payment mode, GoldCheck ref, state `HELD`, expiry.
 
 Later changes to the hold (`BOOKED`, `EXPIRED`, `RELEASED`, `OFFERED`) are written as **new versions**
 of file 2, never edits. The seat count itself is kept in a separate fast store, not in S3.

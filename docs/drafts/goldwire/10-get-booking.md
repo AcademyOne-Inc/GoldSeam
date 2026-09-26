@@ -1,6 +1,6 @@
-# Call 7 — Get a booking
+# Call 10 — Get a booking
 
-[← Call 6 — Book the seat](06-book-seat.md) · [Summary](README.md) · Next: [Call 8 — Release a seat →](08-release-seat.md)
+[← Call 9 — Book the seat](09-book-seat.md) · [Summary](README.md) · Next: [Call 11 — Release a seat →](11-release-seat.md)
 
 > **Draft.** Nothing here is live.
 
@@ -14,9 +14,9 @@ It changes nothing.
 
 ## Where it sits
 
-- **Before:** [Call 6](06-book-seat.md) made booking `bkg_01J8Z42M7R`.
+- **Before:** [Call 9](09-book-seat.md) made booking `bkg_01J8Z42M7R`.
 - **This call:** "What is the state of my booking?"
-- **After:** nothing, or [Call 8](08-release-seat.md) to drop.
+- **After:** nothing, or [Call 11](11-release-seat.md) to drop.
 
 ---
 
@@ -34,7 +34,7 @@ Accept: application/json
 
 | Field | This example | Required? | What it means | Rules |
 |---|---|---|---|---|
-| `booking_id` (in the path) | `bkg_01J8Z42M7R` | yes | the booking, from Call 6 | a `bkg_` id |
+| `booking_id` (in the path) | `bkg_01J8Z42M7R` | yes | the booking, from Call 9 | a `bkg_` id |
 | `learner_id` | `lrn_8f3a2c91d7` | yes | who is asking | must own the booking |
 | `Authorization` (header) | `Bearer eyJ…` | yes | sign-in token | must belong to `lrn_8f3a2c91d7` |
 
@@ -44,7 +44,7 @@ Accept: application/json
 
 The reply also carries the header `ETag: "e4d29d0e2b7c41a5f6"` — the version of the record read.
 
-Here the learner paid with a 529 plan instead of the card (the second example in [Call 5](05-goldcard-authorize.md#other-replies-you-can-get-not-errors)), so the school answered "pending" first and confirmed when the plan paid:
+Here the learner paid with a 529 plan instead of the card (the second example in [Call 8](08-goldcard-authorize.md#other-replies-you-can-get-not-errors)), so the school answered "pending" first and confirmed when the plan paid:
 
 ```json
 {
@@ -64,15 +64,15 @@ Here the learner paid with a 529 plan instead of the card (the second example in
   "section": {
     "section_number": "002",
     "crn": "21457",
-    "term": "2027SP",
-    "meetings": [ { "days": "TR", "start": "09:30", "end": "10:50", "room": "LA 114" } ],
+    "term_id": "2027-SP",
+    "meetings": [ { "days": ["TUE", "THU"], "start": "09:30", "end": "10:50", "room": "LA 114" } ],
     "starts_on": "2027-01-19"
   },
   "school": {
     "unitid": "225070",
     "answer": "registered",
     "reason": null,
-    "registration_ref": "21457/2027SP",
+    "registration_ref": "202720.21457",
     "waitlist_position": null,
     "answered_at": "2026-10-09T15:40:10Z"
   },
@@ -89,10 +89,10 @@ Here the learner paid with a 529 plan instead of the card (the second example in
   "history": [
     { "at": "2026-09-25T14:11:50Z", "state": "SUBMITTED", "by": "learner",  "version_id": "0pQ1rT7uVx2yZa3bCd4eFg5hIj6kLm7nO", "note": null },
     { "at": "2026-09-25T14:11:52Z", "state": "SUBMITTED", "by": "school",   "version_id": "5sT6uV7wX8yZ9aB0.cD1eF2gH3iJ4kL5", "note": "pending: Awaiting 529 plan payment" },
-    { "at": "2026-10-09T15:40:10Z", "state": "CONFIRMED", "by": "school",   "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY", "note": "registered, registration_ref 21457/2027SP" }
+    { "at": "2026-10-09T15:40:10Z", "state": "CONFIRMED", "by": "school",   "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY", "note": "registered, registration_ref 202720.21457" }
   ],
   "s3": {
-    "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
+    "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
     "etag": "\"e4d29d0e2b7c41a5f6\"",
     "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY"
   }
@@ -112,10 +112,10 @@ In words: **confirmed on 9 October** when the 529 plan paid. Tue/Thu 9:30 in LA 
 | `confirmation_number` | `GW-225070-7Q4K-2M` | only when `CONFIRMED` (kept after a drop, for the record) |
 | `section_id` / `hold_id` / `goldcheck_ref` | | carried through |
 | `course.code` / `.title` / `.credits` | `ENGL 1301` / `Composition I` / `3` | copied in at booking so this reply reads on its own |
-| `section.section_number` / `.crn` / `.term` / `.meetings` / `.starts_on` | `002` / `21457` / `2027SP` / Tue/Thu 9:30 / 19 Jan | the same |
+| `section.section_number` / `.crn` / `.term` / `.meetings` / `.starts_on` | `002` / `21457` / `2027-SP` / Tue/Thu 9:30 / 19 Jan | the same |
 | `school.answer` | `registered` | the school's latest answer |
 | `school.reason` | `null` | the school's words, if it refused or is pending |
-| `school.registration_ref` | `21457/2027SP` | the school's own reference |
+| `school.registration_ref` | `202720.21457` | the school's own reference |
 | `school.answered_at` | `2026-10-09T15:40:10Z` | |
 | `payment.funds_status` | `captured` | where the money stands now: `authorized`, `committed`, `pending`, `captured`, `released` |
 | `payment.capture` | `on_confirmation` | |

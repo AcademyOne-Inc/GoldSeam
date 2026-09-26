@@ -1,6 +1,6 @@
-# Call 9 — Record the school's answer (internal)
+# Call 12 — Record the school's answer (internal)
 
-[← Call 8 — Release a seat](08-release-seat.md) · [Summary](README.md)
+[← Call 11 — Release a seat](11-release-seat.md) · [Summary](README.md)
 
 > **Draft.** Nothing here is live. **Learners and their apps never call this.** It is called only by
 > the school adapter — the piece that connects GoldWire to one school's registration system.
@@ -11,14 +11,14 @@ Carries **the school's later answer** onto a booking: the learner was registered
 waitlisted, dropped — or the school corrected the price (for example, it re-rated the learner from
 in-district to out-of-state). GoldWire moves the booking and the money to match and tells the learner.
 
-This is how a booking that came back `SUBMITTED` in [Call 6](06-book-seat.md) becomes `CONFIRMED`
+This is how a booking that came back `SUBMITTED` in [Call 9](09-book-seat.md) becomes `CONFIRMED`
 days later.
 
 ## Where it sits
 
 - **Before:** a booking is `SUBMITTED` (the school is waiting for the 529 payment) or `DROP_REQUESTED`.
 - **This call:** the school's system says "registered" on 9 October.
-- **After:** the learner sees it in [Call 7 — Get a booking](07-get-booking.md) and gets a notification.
+- **After:** the learner sees it in [Call 10 — Get a booking](10-get-booking.md) and gets a notification.
 
 ---
 
@@ -36,7 +36,7 @@ Content-Type: application/json
   "unitid": "225070",
   "answer": "registered",
   "reason": null,
-  "registration_ref": "21457/2027SP",
+  "registration_ref": "202720.21457",
   "waitlist_position": null,
   "new_total": null,
   "answered_at": "2026-10-09T15:40:10Z"
@@ -53,7 +53,7 @@ Content-Type: application/json
 | `unitid` | `225070` | yes | the school | must match the token and the booking |
 | `answer` | `registered` | yes | the school's decision | `registered`, `pending`, `waitlisted`, `refused`, `dropped`, `re_rated` |
 | `reason` | `null` | for `refused`, `pending`, `re_rated` | the school's own words; shown to the learner exactly | up to 500 characters |
-| `registration_ref` | `21457/2027SP` | for `registered` | the school's reference | |
+| `registration_ref` | `202720.21457` | for `registered` | the school's reference | |
 | `waitlist_position` | `null` | for `waitlisted` | | whole number, 1 or more |
 | `new_total` | `null` | for `re_rated` | the school's corrected price | money, e.g. `{ "amount": "367.00", "currency": "USD" }` |
 | `answered_at` | `2026-10-09T15:40:10Z` | yes | when the school decided | |
@@ -66,14 +66,14 @@ Content-Type: application/json
 | `SUBMITTED` | `pending` | stays `SUBMITTED`; reason added | unchanged | "Your registration is pending: {reason}." |
 | `SUBMITTED` | `waitlisted` | `WAITLISTED` | authorization released | "You're number {n} on the waitlist." |
 | `SUBMITTED` | `refused` | `REJECTED`; seat returned | authorization or guarantee released | "Your registration was not accepted: {reason}." |
-| `CONFIRMED` or `DROP_REQUESTED` | `dropped` | `DROPPED` | refund per the school's policy, as in [Call 8](08-release-seat.md) | "You've been dropped from ENGL 1301. Refund: {amount}." |
+| `CONFIRMED` or `DROP_REQUESTED` | `dropped` | `DROPPED` | refund per the school's policy, as in [Call 11](11-release-seat.md) | "You've been dropped from ENGL 1301. Refund: {amount}." |
 | `SUBMITTED` or `CONFIRMED` | `re_rated` | unchanged; a price change is added | the learner must **approve** the difference in GoldCard; nothing more is charged without approval | "The school changed your price from {old} to {new}: {reason}. Please review." |
 
 ---
 
 ## The reply — `200 OK`
 
-The full booking, exactly as [Call 7](07-get-booking.md) returns it, now at `CONFIRMED`:
+The full booking, exactly as [Call 10](10-get-booking.md) returns it, now at `CONFIRMED`:
 
 ```json
 {
@@ -90,9 +90,9 @@ The full booking, exactly as [Call 7](07-get-booking.md) returns it, now at `CON
   "hold_id": "hld_01J8Z3XQ2K",
   "goldcheck_ref": "gck_5TR20P",
   "course": { "code": "ENGL 1301", "title": "Composition I", "credits": 3 },
-  "section": { "section_number": "002", "crn": "21457", "term": "2027SP",
-               "meetings": [ { "days": "TR", "start": "09:30", "end": "10:50", "room": "LA 114" } ], "starts_on": "2027-01-19" },
-  "school": { "unitid": "225070", "answer": "registered", "reason": null, "registration_ref": "21457/2027SP",
+  "section": { "section_number": "002", "crn": "21457", "term_id": "2027-SP",
+               "meetings": [ { "days": ["TUE", "THU"], "start": "09:30", "end": "10:50", "room": "LA 114" } ], "starts_on": "2027-01-19" },
+  "school": { "unitid": "225070", "answer": "registered", "reason": null, "registration_ref": "202720.21457",
               "waitlist_position": null, "answered_at": "2026-10-09T15:40:10Z" },
   "payment": { "mode": "prepay", "goldcard_authorization_id": "auth_9MN3R7", "goldcard_guarantee_id": null,
                "amount": { "amount": "241.00", "currency": "USD" }, "funds_status": "captured", "capture": "on_confirmation" },
@@ -101,14 +101,14 @@ The full booking, exactly as [Call 7](07-get-booking.md) returns it, now at `CON
   "history": [
     { "at": "2026-09-25T14:11:50Z", "state": "SUBMITTED", "by": "learner", "version_id": "0pQ1rT7uVx2yZa3bCd4eFg5hIj6kLm7nO", "note": null },
     { "at": "2026-09-25T14:11:52Z", "state": "SUBMITTED", "by": "school",  "version_id": "5sT6uV7wX8yZ9aB0.cD1eF2gH3iJ4kL5", "note": "pending: Awaiting 529 plan payment" },
-    { "at": "2026-10-09T15:40:10Z", "state": "CONFIRMED", "by": "school",  "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY", "note": "registered, registration_ref 21457/2027SP" }
+    { "at": "2026-10-09T15:40:10Z", "state": "CONFIRMED", "by": "school",  "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY", "note": "registered, registration_ref 202720.21457" }
   ],
-  "s3": { "key": "goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
+  "s3": { "key": "goldwire/225070/2027-SP/sec_225070_2027SP_ENGL1301_002/bookings/bkg_01J8Z42M7R.json",
           "etag": "\"e4d29d0e2b7c41a5f6\"", "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY" }
 }
 ```
 
-Every field is explained on the [Call 7 page](07-get-booking.md#every-field-you-get-back).
+Every field is explained on the [Call 10 page](10-get-booking.md#every-field-you-get-back).
 
 **A re-rate** — the school found the learner is out-of-district (`answer: "re_rated"`,
 `new_total: 367.00`, `reason: "Residency documents show an out-of-district address; in-state rate applies."`)
