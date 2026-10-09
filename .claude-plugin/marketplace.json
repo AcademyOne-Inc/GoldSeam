@@ -1,0 +1,11 @@
+{
+  "name": "goldseam",
+  "owner": { "name": "AcademyOne, Inc." },
+  "plugins": [
+    {
+      "name": "goldseam",
+      "source": "./",
+      "description": "Sourced answers about colleges, programs, checklists, transfer credit, certifications, careers and prior learning, from published records."
+    }
+  ]
+}

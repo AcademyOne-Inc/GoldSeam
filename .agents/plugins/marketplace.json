@@ -1,0 +1,10 @@
+{
+  "name": "goldseam",
+  "interface": { "displayName": "GoldSeam" },
+  "plugins": [
+    {
+      "name": "goldseam",
+      "source": { "source": "local", "path": "./" }
+    }
+  ]
+}

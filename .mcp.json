@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "goldseam": {
+      "type": "http",
+      "url": "https://goldseam.ksaworks.com/mcp"
+    }
+  }
+}

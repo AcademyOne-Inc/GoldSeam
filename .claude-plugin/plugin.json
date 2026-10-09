@@ -1,0 +1,8 @@
+{
+  "name": "goldseam",
+  "version": "1.2.0",
+  "description": "Sourced answers about colleges, programs, checklists, transfer credit, certifications, careers and prior learning, from published records.",
+  "author": { "name": "AcademyOne, Inc." },
+  "homepage": "https://ksaworks.com",
+  "repository": "https://github.com/AcademyOne-Inc/GoldSeam"
+}
