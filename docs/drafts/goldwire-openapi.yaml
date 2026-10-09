@@ -1,0 +1,822 @@
+openapi: 3.1.0
+info:
+  title: GoldWire POC
+  version: 0.1.0-draft
+  summary: Section openings, fees, seat holds and bookings (proof of concept).
+  description: |
+    DRAFT for discussion. Nothing here is live. Companion to goldwire-booking.md,
+    which explains the flow; this file is the authoritative shape of every request and reply.
+
+    Conventions
+    - Every reply carries the envelope fields (contract, request_id, status, as_of, source).
+    - Reads are GET and change nothing, except that get_section_fees records the quote it returns.
+    - Every state change is a PUT to a client-chosen idempotency key. Replaying the same key with
+      the same body returns the first reply (header Idempotent-Replayed: true); the same key with a
+      different body is IDEMPOTENCY_CONFLICT.
+    - Money is a decimal string with two places plus a currency, never a float.
+    - "not_held" is an answer (HTTP 200), not an error: the school has not published that record.
+    - A booking is CONFIRMED only from the school's own answer.
+servers:
+  - url: https://api.goldseam.example/goldwire/v1
+    description: placeholder host for the POC
+security:
+  - learnerToken: []
+tags:
+  - name: GoldWire
+  - name: GoldCard (reference)
+    description: Called by the client between hold_seat and book_seat. Shown so the references line up.
+  - name: School adapter (internal)
+    description: How a school's answer reaches a booking. Not called by learners.
+
+paths:
+  /sections:
+    get:
+      tags: [GoldWire]
+      operationId: get_section_openings
+      summary: Which sections of this course have seats this term.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - { name: learner_id, in: query, required: true, schema: { $ref: '#/components/schemas/LearnerId' } }
+        - { name: unitid, in: query, required: true, schema: { $ref: '#/components/schemas/Unitid' } }
+        - { name: learning_unit_id, in: query, required: true, schema: { $ref: '#/components/schemas/LearningUnitId' } }
+        - { name: term, in: query, required: true, schema: { $ref: '#/components/schemas/Term' } }
+        - { name: goldcheck_ref, in: query, required: false, schema: { $ref: '#/components/schemas/GoldcheckRef' } }
+        - { name: modality, in: query, required: false, schema: { $ref: '#/components/schemas/ModalityFilter' } }
+        - { name: campus, in: query, required: false, schema: { type: string, maxLength: 80 } }
+        - { name: days, in: query, required: false, schema: { $ref: '#/components/schemas/Days' } }
+        - name: time_window
+          in: query
+          required: false
+          schema: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$', examples: ['17:00-22:00'] }
+        - { name: include_full, in: query, required: false, schema: { type: boolean, default: false } }
+      responses:
+        '200':
+          description: Sections, or not_held when the school's schedule for that term is not captured.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SectionOpeningsReply' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Offline' }
+
+  /sections/{section_id}/fees:
+    get:
+      tags: [GoldWire]
+      operationId: get_section_fees
+      summary: What a seat costs, and what is due now versus at the school.
+      description: |
+        Returns a quote_id so the price seen is the price held. The quote is recorded in S3.
+        Repeating the same arguments while the quote is live returns the same quote_id.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/SectionIdPath'
+        - { name: learner_id, in: query, required: true, schema: { $ref: '#/components/schemas/LearnerId' } }
+        - { name: payment_mode, in: query, required: true, schema: { $ref: '#/components/schemas/PaymentMode' } }
+        - { name: residency, in: query, required: false, schema: { $ref: '#/components/schemas/Residency' } }
+        - { name: funding_source_type, in: query, required: false, schema: { $ref: '#/components/schemas/FundingSourceType' } }
+        - { name: currency, in: query, required: false, schema: { $ref: '#/components/schemas/Currency' } }
+      responses:
+        '200':
+          description: A quote, or not_held when the school's fee record is not captured.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FeeQuoteReply' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Offline' }
+
+  /holds/{idempotency_key}:
+    put:
+      tags: [GoldWire]
+      operationId: hold_seat
+      summary: Keep a seat for a short window while the learner pays.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HoldSeatRequest' }
+      responses:
+        '201':
+          description: First write. The reply says HELD, WAITLISTED or SECTION_FULL.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HoldReply' }
+        '200':
+          description: Replay of an earlier request with this key.
+          headers: { Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HoldReply' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Offline' }
+
+  /bookings/{idempotency_key}:
+    put:
+      tags: [GoldWire]
+      operationId: book_seat
+      summary: Turn a hold into a registration request to the school.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookSeatRequest' }
+      responses:
+        '201':
+          description: First write. booking_state is the school's answer, or SUBMITTED while it is pending.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingReply' }
+        '200':
+          description: Replay of an earlier request with this key.
+          headers: { Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingReply' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /bookings/{booking_id}:
+    get:
+      tags: [GoldWire]
+      operationId: get_booking
+      summary: The booking as last recorded, with its history. Never recomputed.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - { name: booking_id, in: path, required: true, schema: { $ref: '#/components/schemas/BookingId' } }
+        - { name: learner_id, in: query, required: true, schema: { $ref: '#/components/schemas/LearnerId' } }
+      responses:
+        '200':
+          description: The booking record.
+          headers:
+            ETag: { schema: { type: string }, description: S3 ETag of the booking object }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingRecordReply' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /releases/{idempotency_key}:
+    put:
+      tags: [GoldWire]
+      operationId: release_seat
+      summary: Release a hold, or ask the school to drop a booking.
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReleaseSeatRequest' }
+      responses:
+        '201':
+          description: First write.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReleaseReply' }
+        '200':
+          description: Replay.
+          headers: { Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReleaseReply' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /goldcard/authorizations/{idempotency_key}:
+    put:
+      tags: [GoldCard (reference)]
+      operationId: goldcard_authorize
+      summary: Authorize the amount due now (prepay), or record a guarantee (reserve).
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GoldcardAuthorizeRequest' }
+      responses:
+        '201':
+          description: Authorized or guaranteed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GoldcardAuthorizeReply' }
+        '402': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /bookings/{booking_id}/school-answer:
+    put:
+      tags: [School adapter (internal)]
+      operationId: record_school_answer
+      summary: The school's SIS adapter records the school's answer on a booking.
+      security:
+        - schoolAdapter: []
+      parameters:
+        - { name: booking_id, in: path, required: true, schema: { $ref: '#/components/schemas/BookingId' } }
+        - name: If-Match
+          in: header
+          required: true
+          description: ETag of the booking version this answer applies to.
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SchoolAnswer' }
+      responses:
+        '200':
+          description: Recorded; the booking moved to the matching state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingRecordReply' }
+        '412': { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    learnerToken:
+      type: http
+      scheme: bearer
+      description: The token's subject must equal the learner_id sent; otherwise 403.
+    schoolAdapter:
+      type: http
+      scheme: bearer
+      description: Scoped to one unitid.
+
+  headers:
+    IdempotentReplayed:
+      description: Present and true when this reply is a replay of an earlier request.
+      schema: { type: boolean }
+
+  parameters:
+    RequestIdHeader:
+      name: X-Request-Id
+      in: header
+      required: false
+      description: Correlation id; generated if absent and echoed as request_id.
+      schema: { $ref: '#/components/schemas/RequestId' }
+    SectionIdPath:
+      name: section_id
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/SectionId' }
+    IdempotencyKeyPath:
+      name: idempotency_key
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/IdempotencyKey' }
+
+  responses:
+    Error:
+      description: The request could not be carried out.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorReply' }
+    Offline:
+      description: The school's system was unreachable. Try again shortly.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorReply' }
+
+  schemas:
+    # ---------- identifiers ----------
+    LearnerId:
+      type: string
+      pattern: '^lrn_[A-Za-z0-9]{8,40}$'
+      description: Pseudonymous GoldSeam learner token. Never a name, SSN or school student ID.
+      examples: ['lrn_8f3a2c91d7']
+    Unitid:
+      type: string
+      pattern: '^\d{6}$'
+      description: IPEDS UNITID, from CourseShelf.
+      examples: ['225070']
+    LearningUnitId:
+      type: string
+      pattern: '^lu_[A-Za-z0-9_]+$'
+      description: A course, from CourseShelf learning_units / get_learning_unit.
+      examples: ['lu_225070_ENGL1301']
+    SectionId:
+      type: string
+      pattern: '^sec_[A-Za-z0-9_]+$'
+      examples: ['sec_225070_2027SP_ENGL1301_002']
+    QuoteId: { type: string, pattern: '^qt_[0-9A-HJKMNP-TV-Z]{10,26}$', examples: ['qt_01J8Z3V6N4'] }
+    HoldId: { type: string, pattern: '^hld_[0-9A-HJKMNP-TV-Z]{10,26}$', examples: ['hld_01J8Z3XQ2K'] }
+    BookingId: { type: string, pattern: '^bkg_[0-9A-HJKMNP-TV-Z]{10,26}$', examples: ['bkg_01J8Z42M7R'] }
+    AuthorizationId: { type: string, pattern: '^auth_[A-Za-z0-9]{6,40}$', examples: ['auth_7HF2Q9'] }
+    GuaranteeId: { type: string, pattern: '^gtd_[A-Za-z0-9]{6,40}$', examples: ['gtd_4KX81M'] }
+    GoldcheckRef:
+      type: string
+      pattern: '^gck_[A-Za-z0-9]{6,40}$'
+      description: The GoldCheck answer the learner relied on. Recorded, never re-judged.
+      examples: ['gck_5TR20P']
+    PolicyId: { type: string, pattern: '^pol_[A-Za-z0-9_]+$', examples: ['pol_225070_refunds_2026_27'] }
+    RequestId: { type: string, format: uuid }
+    IdempotencyKey:
+      type: string
+      pattern: '^[A-Za-z0-9_-]{16,64}$'
+      description: Client-generated (a UUID or ULID works). Kept 24 hours.
+    ConfirmationNumber:
+      type: string
+      pattern: '^GW-\d{6}-[A-Z0-9]{4}-[A-Z0-9]{2}$'
+      examples: ['GW-225070-7Q4K-2M']
+
+    # ---------- small values ----------
+    Term:
+      type: string
+      minLength: 2
+      maxLength: 16
+      description: The school's own term code, passed through unchanged.
+      examples: ['2027SP', '202710']
+    Days:
+      type: string
+      pattern: '^[MTWRFSU]{1,7}$'
+      description: M T W R(Thu) F S U(Sun).
+      examples: ['MWF', 'TR']
+    Modality: { type: string, enum: [in_person, online, hybrid] }
+    ModalityFilter: { type: string, enum: [in_person, online, hybrid, any], default: any }
+    PaymentMode:
+      type: string
+      enum: [reserve, prepay]
+      description: reserve = book now, the school bills later; prepay = GoldCard pays at booking.
+    Residency:
+      type: string
+      enum: [in_district, in_state, out_of_state, international, unknown]
+      default: unknown
+      description: unknown returns every published rate and chooses none.
+    FundingSourceType: { type: string, enum: [bank_ach, credit_card, loan, plan_529] }
+    Currency: { type: string, pattern: '^[A-Z]{3}$', default: USD }
+    Money:
+      type: object
+      required: [amount, currency]
+      additionalProperties: false
+      properties:
+        amount: { type: string, pattern: '^-?\d+\.\d{2}$', examples: ['241.00'] }
+        currency: { $ref: '#/components/schemas/Currency' }
+    S3Ref:
+      type: object
+      required: [key, etag]
+      additionalProperties: false
+      properties:
+        key: { type: string, examples: ['goldwire/225070/2027SP/sec_225070_2027SP_ENGL1301_002/holds/hld_01J8Z3XQ2K.json'] }
+        etag: { type: string }
+        version_id: { type: string }
+
+    # ---------- envelope ----------
+    Status:
+      type: string
+      enum: [ok, not_held, offline]
+    Source:
+      type: object
+      required: [kind]
+      additionalProperties: false
+      description: Where the numbers came from.
+      properties:
+        kind: { type: string, enum: [school_sis_feed, school_published_schedule, school_fee_policy, goldwire_ledger] }
+        unitid: { $ref: '#/components/schemas/Unitid' }
+        feed: { type: string, description: 'e.g. banner-ssb, colleague, peoplesoft, workday' }
+        policy_id: { $ref: '#/components/schemas/PolicyId' }
+        edition: { type: string, examples: ['2026–27'] }
+        published: { type: string, format: date }
+        read_at: { type: string, format: date-time }
+    NotHeldItem:
+      type: object
+      required: [what]
+      additionalProperties: false
+      properties:
+        what: { type: string, description: 'What is missing, e.g. "lab fee", "section 004 seat count"' }
+        note: { type: string }
+    Envelope:
+      type: object
+      required: [contract, request_id, status, as_of]
+      properties:
+        contract: { const: goldwire_v1 }
+        request_id: { $ref: '#/components/schemas/RequestId' }
+        status: { $ref: '#/components/schemas/Status' }
+        as_of: { type: string, format: date-time }
+        source: { $ref: '#/components/schemas/Source' }
+        not_held:
+          type: array
+          items: { $ref: '#/components/schemas/NotHeldItem' }
+          default: []
+
+    # ---------- get_section_openings ----------
+    Meeting:
+      type: object
+      required: [days, start, end]
+      additionalProperties: false
+      properties:
+        days: { $ref: '#/components/schemas/Days' }
+        start: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        end: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        room: { type: string }
+    Seats:
+      type: object
+      required: [capacity, enrolled, held, available]
+      additionalProperties: false
+      description: available = capacity − enrolled − held, never below zero.
+      properties:
+        capacity: { type: integer, minimum: 0 }
+        enrolled: { type: integer, minimum: 0 }
+        held: { type: integer, minimum: 0, description: GoldWire's own un-expired holds. }
+        available: { type: integer, minimum: 0 }
+        waitlist:
+          type: object
+          required: [open]
+          additionalProperties: false
+          properties:
+            open: { type: boolean }
+            length: { type: integer, minimum: 0 }
+            capacity: { type: integer, minimum: 0 }
+    Section:
+      type: object
+      required: [section_id, section_number, modality, seats, booking]
+      additionalProperties: false
+      properties:
+        section_id: { $ref: '#/components/schemas/SectionId' }
+        section_number: { type: string, examples: ['002'] }
+        crn: { type: string, description: The school's own section reference number. }
+        modality: { $ref: '#/components/schemas/Modality' }
+        campus: { type: string }
+        meetings: { type: array, items: { $ref: '#/components/schemas/Meeting' } }
+        instructor: { type: string, description: As published; "Staff" if the school says so. }
+        starts_on: { type: string, format: date }
+        ends_on: { type: string, format: date }
+        seats: { $ref: '#/components/schemas/Seats' }
+        booking:
+          type: object
+          required: [bookable]
+          additionalProperties: false
+          properties:
+            bookable: { type: boolean, description: false where the school publishes a schedule but takes no bookings. }
+            requires:
+              type: array
+              items: { type: string, enum: [prerequisite_check, instructor_permission, placement_score, advisor_approval] }
+            hold_window_minutes: { type: integer, minimum: 1, maximum: 10080 }
+        add_deadline: { type: string, format: date }
+        drop_deadline_full_refund: { type: string, format: date }
+        goldcheck_note:
+          type: string
+          description: Present only when goldcheck_ref was sent; what GoldCheck said the course counts toward.
+    SectionOpeningsReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [term, sections]
+          properties:
+            learning_unit:
+              type: object
+              required: [learning_unit_id]
+              properties:
+                learning_unit_id: { $ref: '#/components/schemas/LearningUnitId' }
+                code: { type: string }
+                title: { type: string }
+                credits: { type: number, minimum: 0 }
+            term: { $ref: '#/components/schemas/Term' }
+            sections: { type: array, items: { $ref: '#/components/schemas/Section' } }
+
+    # ---------- get_section_fees ----------
+    LineItem:
+      type: object
+      required: [code, label, amount, payee]
+      additionalProperties: false
+      properties:
+        code: { type: string, examples: [TUITION, GEN_FEE, COURSE_FEE, LAB_FEE, GW_BOOKING, FUNDING_SURCHARGE] }
+        label: { type: string }
+        amount: { $ref: '#/components/schemas/Money' }
+        payee: { type: string, enum: [school, goldwire, goldcard] }
+        source: { type: string, description: Policy or learning-unit id the amount is published in. }
+    FeeQuoteReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [quote_id, quote_expires_at, section_id, payment_mode, line_items, totals, due]
+          properties:
+            quote_id: { $ref: '#/components/schemas/QuoteId' }
+            quote_expires_at: { type: string, format: date-time }
+            section_id: { $ref: '#/components/schemas/SectionId' }
+            residency_applied: { $ref: '#/components/schemas/Residency' }
+            payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+            line_items: { type: array, minItems: 1, items: { $ref: '#/components/schemas/LineItem' } }
+            totals:
+              type: object
+              required: [school, goldwire, total, totals_complete]
+              additionalProperties: false
+              properties:
+                school: { $ref: '#/components/schemas/Money' }
+                goldwire: { $ref: '#/components/schemas/Money' }
+                total: { $ref: '#/components/schemas/Money' }
+                totals_complete: { type: boolean, description: false when any fee is not_held. }
+            due:
+              type: object
+              required: [now, at_school]
+              additionalProperties: false
+              description: prepay puts the total in now; reserve puts it in at_school.
+              properties:
+                now: { $ref: '#/components/schemas/Money' }
+                at_school: { $ref: '#/components/schemas/Money' }
+                school_due_date: { type: [string, 'null'], format: date }
+            refund_policy:
+              type: object
+              properties:
+                full_refund_until: { type: string, format: date }
+                source: { $ref: '#/components/schemas/PolicyId' }
+            no_show_fee:
+              description: The school's published late-drop / no-show rule, or null if it publishes none.
+              oneOf:
+                - type: 'null'
+                - type: object
+                  required: [amount, source]
+                  properties:
+                    amount: { $ref: '#/components/schemas/Money' }
+                    applies_after: { type: string, format: date }
+                    source: { $ref: '#/components/schemas/PolicyId' }
+            s3: { $ref: '#/components/schemas/S3Ref' }
+
+    # ---------- hold_seat ----------
+    HoldSeatRequest:
+      type: object
+      required: [learner_id, section_id, quote_id, payment_mode]
+      additionalProperties: false
+      properties:
+        learner_id: { $ref: '#/components/schemas/LearnerId' }
+        section_id: { $ref: '#/components/schemas/SectionId' }
+        quote_id: { $ref: '#/components/schemas/QuoteId' }
+        payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+        goldcheck_ref: { $ref: '#/components/schemas/GoldcheckRef' }
+        accept_waitlist: { type: boolean, default: false }
+      examples:
+        - learner_id: lrn_8f3a2c91d7
+          section_id: sec_225070_2027SP_ENGL1301_002
+          quote_id: qt_01J8Z3V6N4
+          payment_mode: prepay
+          goldcheck_ref: gck_5TR20P
+          accept_waitlist: true
+    HoldState: { type: string, enum: [HELD, WAITLISTED, SECTION_FULL, EXPIRED, RELEASED, BOOKED] }
+    HoldReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [hold_state, section_id, quote_id]
+          properties:
+            hold_id: { $ref: '#/components/schemas/HoldId', description: Absent when SECTION_FULL. }
+            hold_state: { $ref: '#/components/schemas/HoldState' }
+            section_id: { $ref: '#/components/schemas/SectionId' }
+            quote_id: { $ref: '#/components/schemas/QuoteId' }
+            hold_expires_at: { type: string, format: date-time }
+            waitlist_position: { type: integer, minimum: 1 }
+            seats_after_hold: { $ref: '#/components/schemas/Seats' }
+            next:
+              type: object
+              description: What the client calls next.
+              properties:
+                service: { const: goldcard.authorize }
+                payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+                amount_due_now: { $ref: '#/components/schemas/Money' }
+            s3: { $ref: '#/components/schemas/S3Ref' }
+
+    # ---------- GoldCard (reference) ----------
+    FundingSource:
+      type: object
+      required: [type, token]
+      additionalProperties: false
+      description: A GoldCard token for the account, card, loan or 529 plan. Never raw numbers.
+      properties:
+        type: { $ref: '#/components/schemas/FundingSourceType' }
+        token: { type: string, pattern: '^fs_[A-Za-z0-9]{8,40}$' }
+    GoldcardAuthorizeRequest:
+      type: object
+      required: [learner_id, hold_id, quote_id, payment_mode, funding_source, amount]
+      additionalProperties: false
+      properties:
+        learner_id: { $ref: '#/components/schemas/LearnerId' }
+        hold_id: { $ref: '#/components/schemas/HoldId' }
+        quote_id: { $ref: '#/components/schemas/QuoteId' }
+        payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+        funding_source: { $ref: '#/components/schemas/FundingSource' }
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: Must equal the quote's due.now (0.00 for reserve).
+    FundsStatus:
+      type: string
+      enum: [authorized, committed, pending, captured, released]
+      description: |
+        authorized = card/ACH hold placed; committed = a 529 or loan disbursement requested, not yet paid;
+        pending = awaiting the learner or the plan; captured = collected; released = let go.
+    GoldcardAuthorizeReply:
+      type: object
+      required: [contract, request_id, payment_mode, funds_status]
+      properties:
+        contract: { const: goldcard_v1 }
+        request_id: { $ref: '#/components/schemas/RequestId' }
+        payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+        goldcard_authorization_id: { $ref: '#/components/schemas/AuthorizationId', description: prepay only. }
+        goldcard_guarantee_id: { $ref: '#/components/schemas/GuaranteeId', description: reserve only. }
+        authorized_amount: { $ref: '#/components/schemas/Money' }
+        funds_status: { $ref: '#/components/schemas/FundsStatus' }
+        authorization_expires_at: { type: string, format: date-time }
+        expected_settlement_on: { type: string, format: date }
+
+    # ---------- book_seat ----------
+    Attestations:
+      type: object
+      required: [prerequisites_met, policies_acknowledged]
+      additionalProperties: false
+      description: What the learner affirmed, recorded as affirmed.
+      properties:
+        prerequisites_met: { type: boolean }
+        policies_acknowledged: { type: array, minItems: 1, items: { $ref: '#/components/schemas/PolicyId' } }
+    BookSeatRequest:
+      type: object
+      required: [learner_id, hold_id, payment_mode, attestations]
+      additionalProperties: false
+      properties:
+        learner_id: { $ref: '#/components/schemas/LearnerId' }
+        hold_id: { $ref: '#/components/schemas/HoldId' }
+        payment_mode: { $ref: '#/components/schemas/PaymentMode' }
+        goldcard_authorization_id: { $ref: '#/components/schemas/AuthorizationId' }
+        goldcard_guarantee_id: { $ref: '#/components/schemas/GuaranteeId' }
+        school_student_ref:
+          type: string
+          writeOnly: true
+          description: Only if the school requires it. Sent to the school, stored encrypted, never returned.
+        attestations: { $ref: '#/components/schemas/Attestations' }
+      oneOf:
+        - properties: { payment_mode: { const: prepay } }
+          required: [goldcard_authorization_id]
+        - properties: { payment_mode: { const: reserve } }
+          required: [goldcard_guarantee_id]
+      examples:
+        - learner_id: lrn_8f3a2c91d7
+          hold_id: hld_01J8Z3XQ2K
+          payment_mode: prepay
+          goldcard_authorization_id: auth_7HF2Q9
+          attestations:
+            prerequisites_met: true
+            policies_acknowledged: [pol_225070_refunds_2026_27]
+    BookingState:
+      type: string
+      enum: [SUBMITTED, CONFIRMED, WAITLISTED, REJECTED, DROP_REQUESTED, DROPPED]
+    SchoolAnswerSummary:
+      type: object
+      required: [unitid, answer]
+      additionalProperties: false
+      properties:
+        unitid: { $ref: '#/components/schemas/Unitid' }
+        answer: { type: string, enum: [registered, pending, waitlisted, refused, dropped, no_answer] }
+        reason: { type: string, description: The school's own reason, verbatim, when refused. }
+        registration_ref: { type: string }
+        waitlist_position: { type: integer, minimum: 1 }
+        answered_at: { type: string, format: date-time }
+    Payment:
+      type: object
+      required: [mode, funds_status]
+      additionalProperties: false
+      properties:
+        mode: { $ref: '#/components/schemas/PaymentMode' }
+        goldcard_authorization_id: { $ref: '#/components/schemas/AuthorizationId' }
+        goldcard_guarantee_id: { $ref: '#/components/schemas/GuaranteeId' }
+        amount: { $ref: '#/components/schemas/Money' }
+        funds_status: { $ref: '#/components/schemas/FundsStatus' }
+        capture: { type: string, enum: [on_confirmation, at_school, none] }
+    BookingCore:
+      type: object
+      required: [booking_id, booking_state, section_id, hold_id, school, payment]
+      properties:
+        booking_id: { $ref: '#/components/schemas/BookingId' }
+        booking_state: { $ref: '#/components/schemas/BookingState' }
+        confirmation_number:
+          $ref: '#/components/schemas/ConfirmationNumber'
+          description: Issued only when CONFIRMED.
+        section_id: { $ref: '#/components/schemas/SectionId' }
+        hold_id: { $ref: '#/components/schemas/HoldId' }
+        goldcheck_ref: { $ref: '#/components/schemas/GoldcheckRef' }
+        school: { $ref: '#/components/schemas/SchoolAnswerSummary' }
+        payment: { $ref: '#/components/schemas/Payment' }
+        refund_policy:
+          type: object
+          properties:
+            full_refund_until: { type: string, format: date }
+            source: { $ref: '#/components/schemas/PolicyId' }
+    BookingReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - $ref: '#/components/schemas/BookingCore'
+        - type: object
+          properties:
+            s3:
+              type: object
+              required: [booking]
+              properties:
+                booking: { $ref: '#/components/schemas/S3Ref' }
+                receipt: { $ref: '#/components/schemas/S3Ref' }
+
+    # ---------- get_booking ----------
+    HistoryEntry:
+      type: object
+      required: [at, state, by]
+      additionalProperties: false
+      properties:
+        at: { type: string, format: date-time }
+        state: { $ref: '#/components/schemas/BookingState' }
+        by: { type: string, enum: [learner, school, goldwire, goldcard] }
+        version_id: { type: string, description: S3 version holding this state. }
+        note: { type: string }
+    BookingRecordReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - $ref: '#/components/schemas/BookingCore'
+        - type: object
+          required: [history]
+          properties:
+            history: { type: array, items: { $ref: '#/components/schemas/HistoryEntry' } }
+            s3: { $ref: '#/components/schemas/S3Ref' }
+
+    # ---------- release_seat ----------
+    ReleaseSeatRequest:
+      type: object
+      required: [learner_id, reason]
+      additionalProperties: false
+      properties:
+        learner_id: { $ref: '#/components/schemas/LearnerId' }
+        hold_id: { $ref: '#/components/schemas/HoldId' }
+        booking_id: { $ref: '#/components/schemas/BookingId' }
+        reason: { type: string, enum: [changed_mind, schedule_conflict, chose_other_section, financial, other] }
+        note: { type: string, maxLength: 500 }
+      oneOf:
+        - required: [hold_id]
+        - required: [booking_id]
+    ReleaseReply:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          required: [released_state]
+          properties:
+            hold_id: { $ref: '#/components/schemas/HoldId' }
+            booking_id: { $ref: '#/components/schemas/BookingId' }
+            released_state: { type: string, enum: [RELEASED, DROP_REQUESTED, DROPPED] }
+            refund:
+              type: object
+              description: What the school's published refund policy yields today. Cited, never promised beyond it.
+              properties:
+                amount: { $ref: '#/components/schemas/Money' }
+                percent: { type: integer, minimum: 0, maximum: 100 }
+                source: { $ref: '#/components/schemas/PolicyId' }
+            seats_after_release: { $ref: '#/components/schemas/Seats' }
+            s3: { $ref: '#/components/schemas/S3Ref' }
+
+    # ---------- school adapter ----------
+    SchoolAnswer:
+      type: object
+      required: [unitid, answer, answered_at]
+      additionalProperties: false
+      properties:
+        unitid: { $ref: '#/components/schemas/Unitid' }
+        answer: { type: string, enum: [registered, pending, waitlisted, refused, dropped] }
+        reason: { type: string }
+        registration_ref: { type: string }
+        waitlist_position: { type: integer, minimum: 1 }
+        answered_at: { type: string, format: date-time }
+
+    # ---------- errors ----------
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_FAILED
+        - LEARNER_MISMATCH
+        - QUOTE_EXPIRED
+        - PRICE_CHANGED
+        - SECTION_FULL
+        - HOLD_EXPIRED
+        - HOLD_NOT_ACTIVE
+        - PAYMENT_MISMATCH
+        - PAYMENT_DECLINED
+        - SCHOOL_REJECTED
+        - IDEMPOTENCY_CONFLICT
+        - VERSION_CONFLICT
+        - NOT_FOUND
+        - OFFLINE
+    ErrorReply:
+      type: object
+      required: [contract, request_id, status, error]
+      properties:
+        contract: { const: goldwire_v1 }
+        request_id: { $ref: '#/components/schemas/RequestId' }
+        status: { type: string, enum: [error, offline] }
+        error:
+          type: object
+          required: [code, message, retry]
+          additionalProperties: false
+          properties:
+            code: { $ref: '#/components/schemas/ErrorCode' }
+            message: { type: string }
+            retry: { type: string, enum: [no, same_request, new_quote, new_hold, reauthorize, later] }
+            field: { type: string, description: The request field at fault, for VALIDATION_FAILED. }
+            details: { type: object }
