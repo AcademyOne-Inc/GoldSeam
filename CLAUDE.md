@@ -422,6 +422,25 @@ uses stay.
   file stays the full record of what is built. If no design file covers
   the page, ask me where it goes.
 
+## 25. Portal page shell and title
+
+Scope: KSAWorks portal pages, meaning the public site and the signed-in
+Manage pages. It does not cover WASM apps or other standalone apps. They
+follow their own conventions.
+
+- Header and footer: every portal page uses the one standard shell,
+  `ksaworks-shell.js`, for its header, footer and menu. No portal page
+  draws its own, including in `portal_pages.rs`. Change the header or
+  footer in the shell only.
+- Title block, inside the content container and aligned to its left
+  edge: a small breadcrumb trail on top, then the page title as the H1
+  with its key word in gold, then one or two lines saying what the page
+  holds and what to do. Data-source details sit small and right-aligned
+  on the description's line.
+- Labels: every card, link or menu item that opens a portal page uses
+  that page's exact title.
+- Reference: the CourseShelf View page.
+
 ---
 
 ## You will not
