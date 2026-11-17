@@ -441,6 +441,15 @@ follow their own conventions.
   that page's exact title.
 - Reference: the CourseShelf View page.
 
+## 26. Worktrees
+
+Builders put worktrees under `KSA\_wt\`, named for the work order (for
+example `KSA\_wt\WO-1117-02`). When a work order is done and its branch
+is merged or pushed, the builder removes its worktree with
+`git worktree remove` as its last step and says so in its summary.
+Never leave a worktree with uncommitted work behind without naming it in
+the summary.
+
 ---
 
 ## You will not
