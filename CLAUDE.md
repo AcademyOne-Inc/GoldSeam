@@ -395,6 +395,16 @@ there into its `KSAWorks\docs` folder. Send the rest to the Recycle Bin.
 Clear only your own files. Files another chat or a running skill still
 uses stay.
 
+## 23. Plan status
+
+- Every design or plan page carries one status table: each step, its
+  state (LIVE with commit, PUSHED NOT DEPLOYED, NOT BUILT, WAITS ON
+  DAVID), updated by the chat that changes it.
+- Every chat's finish summary ends with "Still open in the plan": every
+  step of the governing plan that is not LIVE, even steps outside its own
+  prompt. If none, say "Plan complete."
+- A chat never reports a plan as finished while any step is open.
+
 ---
 
 ## You will not
