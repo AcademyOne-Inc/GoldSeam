@@ -405,6 +405,23 @@ uses stay.
   prompt. If none, say "Plan complete."
 - A chat never reports a plan as finished while any step is open.
 
+## 24. Design conventions
+
+- Designs live only in `KSAWorks\docs\design`, in git. A design kept
+  anywhere else is not a design.
+- A builder builds only from a design file marked approved inside the
+  file itself: a status line naming my approval and its date. No chat,
+  prompt, work order or memory stands in for that mark.
+- Before anything ships, the builder renders the page and checks it side
+  by side against the design, reporting every difference.
+- Defects and refinements I direct after a build go into the design.
+  This covers consistency, a convention not followed, and a change in
+  function that does not show on the page. The chat that makes the
+  change adds it to the design file's list of adjustments: the date, my
+  words and where I said them, what changed, and the commit. The design
+  file stays the full record of what is built. If no design file covers
+  the page, ask me where it goes.
+
 ---
 
 ## You will not
