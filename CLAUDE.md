@@ -450,6 +450,16 @@ is merged or pushed, the builder removes its worktree with
 Never leave a worktree with uncommitted work behind without naming it in
 the summary.
 
+## 27. Shared checkout
+
+No chat commits on the shared KSAWorks checkout's master. Each chat works
+in its own worktree under `_wt`, branched from `origin/ksaworks`, and
+commits and pushes from there. Before branching, the chat runs
+`git fetch`. The shared checkout's master only ever fast-forwards to
+`origin/ksaworks` (`git pull --ff-only`), and never holds local commits.
+Files a chat writes there by mistake are moved into its worktree and
+committed there, not left untracked.
+
 ---
 
 ## You will not
