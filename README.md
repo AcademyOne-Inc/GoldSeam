@@ -1,7 +1,9 @@
 # GoldSeam
 
-**The marketplace for teaching, training and learning — to explore, compare and engage with, through
-the AI you already use.**
+**Answers about U.S. colleges, programs, transfer credit, certifications and careers, from real data.**
+
+Set it up in your AI: [Use GoldSeam in your AI](https://ksaworks.com/goldseam-resources.html) ·
+Documentation: [the GoldSeam technical page](https://ksaworks.com/goldseam/)
 
 ```
 https://goldseam.ksaworks.com/mcp
@@ -30,12 +32,12 @@ new surface is new reach rather than a new integration.
 
 ## Connect it
 
-**In Claude** — open **Customize → Connectors**, click **+ → Add custom connector**, paste the address,
-click **Add**. Then in any chat press **+ → Connectors** and switch **GoldSeam** on.
+The steps for Claude, ChatGPT and other apps, as each vendor states them today, are on one page:
+[Use GoldSeam in your AI](https://ksaworks.com/goldseam-resources.html).
 
-Using ChatGPT, Copilot, Gemini, VS Code or your own agent? Same address —
-[`install/`](install/) has that client's steps, a `mcp.json` snippet, and a skill that teaches an AI
-how to ask GoldSeam well.
+Using Copilot, Gemini, VS Code or your own agent? Same address —
+[`install/`](install/) has a `mcp.json` snippet and a skill that teaches an AI how to ask GoldSeam
+well.
 
 **No AI app at all?** The same data answers questions in a browser at
 [KSAWorks](https://ksaworks.com/where-do-you-want-to-go.html).
@@ -121,6 +123,6 @@ examples and use cases. **It does not contain the server's source.**
 | [`docs/`](docs/) | one page per area, how to read an answer, how to ask about coverage, use cases |
 | [`examples/`](examples/) | recorded runs, each stamped with the build and publish that produced it |
 | [`install/`](install/) | per-client connection steps, the `mcp.json` snippet, the skill |
-| [`CHANGELOG.md`](CHANGELOG.md) | what changed for a person, at each release and each data publish |
+| [Release notes](https://ksaworks.com/goldseam/#developers) | what changed for a person, at each release, on the technical page |
 
 Prose here is CC BY 4.0; snippets are MIT. See [LICENSE](LICENSE).

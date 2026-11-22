@@ -1,9 +1,10 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.ksaworks/goldseam",
-  "description": "The U.S. Marketplace of Learning2Earning Opportunity | Sourced checklists, progress, prior learning",
-  "version": "1.2.118",
-  "websiteUrl": "https://ksaworks.com",
+  "title": "GoldSeam",
+  "description": "Answers about U.S. colleges, programs, transfer credit, certifications and careers, from real data.",
+  "version": "1.2.1652",
+  "websiteUrl": "https://ksaworks.com/goldseam-resources.html",
   "repository": {
     "url": "https://github.com/AcademyOne-Inc/GoldSeam",
     "source": "github"
