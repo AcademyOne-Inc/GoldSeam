@@ -460,6 +460,29 @@ commits and pushes from there. Before branching, the chat runs
 Files a chat writes there by mistake are moved into its worktree and
 committed there, not left untracked.
 
+## 28. Defaults are decisions
+
+When an order or a design leaves a choice open, take your stated default
+and carry on: design, build, bench-check, commit and push, and write the
+deploy notice to Normandy. List every default under “Decided on my own”.
+I review the result and overrule what I disagree with.
+
+Mark a row WAITS ON DAVID only for a permission or data only I can give.
+Stop only if:
+- something that exists nowhere else would be lost;
+- something would reach live data without a deploy notice; or
+- another chat’s work in progress would change.
+
+Where this rule meets the others:
+- Rule 2 is not absolute. A design gap can be resolved by another chat
+  module.
+- Rule 4.3 is about the rules, not about the app code.
+- Rule 6 still holds.
+- Rule 15 holds. When I add “commit and push” to an order, that is my
+  confidence and my authorization.
+- Rule 24: a build is a new effort, and it usually requires a design
+  file. A fix or a defect is not a build and does not require one.
+
 ---
 
 ## You will not
