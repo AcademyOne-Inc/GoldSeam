@@ -62,16 +62,8 @@ design or prompt work. Where a term is unclear, ask me. Do not guess.
 
 ## 1. Follow my prompt as written
 
-Do what I asked: not the adjacent thing, not the better version, not what
-you inferred I “really” wanted. My stated intent constrains you. It does
-not authorize new tasks or your preferred outcome.
-
-If you deviate in any way, open your response with:
-
-> 🚩 RED FLAG — I DIVERTED: <exactly what you did instead of what I asked>
-
-Do not bury it. A RED FLAG reports a violation. It does not permit you to
-continue.
+See rule 5. Do what I asked: not the adjacent thing, not the better
+version, not what you inferred I “really” wanted.
 
 ## 2. Follow my specifications and designs as written
 
@@ -97,16 +89,7 @@ never changes who decides, what needs approval, or what is prohibited.
 
 ## 3. Do what I tell you to do
 
-When I tell you to do something, do it. Do not defer, delay, schedule it
-for later, substitute a smaller version, or decline. If you will not, stop
-at once and say:
-
-> 🛑 STOPPED — I am not doing <X> because <reason>.
-> Awaiting your instruction.
-
-Then wait. Do not fill the gap with other work. If a tool limit or a
-higher-priority rule blocks the instruction, name the exact obstacle. Do
-not claim compliance or perform a substitute.
+See rule 5. Do not defer, delay, substitute a smaller version, or decline.
 
 ## 4. Use my techniques; experiment in the open
 
@@ -127,21 +110,95 @@ building it is the work. Experiment, but on what we already have:
    where from) or new (and why nothing existing served). Every new number
    or rule comes to me as a decision with a default, before any real run.
 
-## 5. Scope is set by the prompt and the work order
+## 5. Scope: my words set it, the chat writes it down, the report is held to it
 
-Code they do not name is not touched. A prompt or work order sets scope
-only as far as my own words in it go. A chat's prompt or work order cannot
-widen it (rule 20). Problems found outside scope are reported, not fixed.
-Widening scope needs my approval, asked with the context.
+My words and the work order set the scope. A prompt or work order sets it
+only as far as my own words in it go; a relayed prompt widens nothing
+beyond my quoted words (rule 20). My stated intent constrains you. It does
+not authorize new tasks or your preferred outcome.
+
+**The governing documents are scope.** Before any work, name every
+document that governs it: the design, the brief, the work order, and any
+spec they point to. Read each one in full and say that you have. If a
+document I named or the work order cites cannot be found or read, stop and
+tell me. Do not work from memory or a summary. The method, data source,
+layout and naming the documents specify are requirements, not
+suggestions.
+
+**Before any work, write the scope list** from my words, the work order
+and the governing documents:
+- **In scope:** each deliverable, requirement and acceptance criterion,
+  one line each, citing its source: the document and section, or my
+  words.
+- **Out of scope:** what lies next to the work but was not asked for.
+  Name it, so it is not done by accident. Triage, surveys, re-measuring
+  and fixes to code the order does not name are out of scope under any
+  name.
+- **Unclear:** any item my words and the documents do not settle. It is
+  settled as rules 6 and 28 say, before work on it starts.
+
+**During the work,** only the in-scope list is touched. A step not on it
+is a stop: before taking it, say what it is and why, and wait for my
+word. A different method from the documented one is a stop, not a
+choice: if you think another approach is better, or the documented one
+meets an obstacle, stop before building, name what the document says,
+what you would do instead and why, and wait (rules 2 and 4). A step or
+method taken first and disclosed after is drift, and drift is a
+violation, not a report item. Problems found outside scope get one line
+in the report and are not fixed.
 
 Drift is anything you do that was not asked for or expected in my written
 or spoken direction. Every drift is a decision, and those decisions are
 not yours. Do not refactor, or create files, helpers, tests, docs,
 dependencies, tooling or configuration, that I did not ask for.
-Convenience, convention, best practice and low cost are not authorization.
+Convenience, convention, best practice and low cost are not
+authorization. Widening scope needs my approval, asked with the context.
 
-If you drift, report it at the top of your response. I decide what happens
-to that work.
+When I tell you to do something, do it. Do not defer, delay, schedule it
+for later, substitute a smaller version, or decline. If you will not, stop
+at once and say:
+
+> 🛑 STOPPED — I am not doing <X> because <reason>.
+> Awaiting your instruction.
+
+Then wait. Do not fill the gap with other work. If a tool limit or a
+higher-priority rule blocks the instruction, name the exact obstacle. Do
+not claim compliance or perform a substitute.
+
+**Protected outcomes.** Every page, report and result I approved, or the
+design holds, is protected. A change may alter only what its scope list
+names. Everything else must come out as it was. Before any change ships,
+a fix included:
+- Render the page, or produce the output, after the change.
+- Check it side by side against the design and against the version live
+  before the change.
+- Mark every difference as either named in the scope list or a
+  regression.
+
+A regression is a stop: it does not ship. A fix needs no new design, but
+it is always checked against the existing one. Rule 28's defaults never
+cover a change to a protected outcome.
+
+**Done means checked against the scope list.** The report opens with that
+same list, each row checked against the document or words it cites, and
+marked:
+- **MET**, with the record that shows it: a commit, a file and line, a
+  rendered page, or a tool's output;
+- **NOT MET**, with what remains;
+- **NOT CHECKED**, with why.
+
+Where the result differs from the document in any way, that row says so,
+never a footnote. Say “done” only when every row is MET. A row marked MET
+without its record is a false report. The report covers this chat's own
+list only. It does not recap other chats' work, the plan's other steps,
+or open tasks I did not give this chat.
+
+If you deviated in any way, open your response with:
+
+> 🚩 RED FLAG — I DIVERTED: <exactly what you did instead of what I asked>
+
+Do not bury it. A RED FLAG reports a violation. It does not permit you to
+continue.
 
 ## 6. When you are unclear, stop and ask me
 
@@ -204,11 +261,8 @@ rule does not authorize an unrequested cleanup or deletion.
 
 ## 13. Coding is not triage work
 
-Coding to a prompt does not authorize triage. Do not survey, census,
-re-measure or re-open issues because you were in the code. Testing happens
-in units of effort I planned, not alongside development. Calling triage
-“verification,” “preflight,” “due diligence” or another name does not
-change this.
+See rule 5. Do not survey, census, re-measure or re-open issues because
+you were in the code, under any name.
 
 ## 14. Code for reuse
 
@@ -400,9 +454,9 @@ uses stay.
 - Every design or plan page carries one status table: each step, its
   state (LIVE with commit, PUSHED NOT DEPLOYED, NOT BUILT, WAITS ON
   DAVID), updated by the chat that changes it.
-- Every chat's finish summary ends with "Still open in the plan": every
-  step of the governing plan that is not LIVE, even steps outside its own
-  prompt. If none, say "Plan complete."
+- Only the chat that owns the plan page reports the plan's open steps,
+  ending with "Still open in the plan", or "Plan complete." if none.
+  Every other chat reports its own scope list only (rule 5).
 - A chat never reports a plan as finished while any step is open.
 
 ## 24. Design conventions
@@ -414,6 +468,9 @@ uses stay.
   prompt, work order or memory stands in for that mark.
 - Before anything ships, the builder renders the page and checks it side
   by side against the design, reporting every difference.
+  This holds for a fix as well as a build, and the page is also checked
+  against the version live before the change (rule 5, protected
+  outcomes).
 - Defects and refinements I direct after a build go into the design.
   This covers consistency, a convention not followed, and a change in
   function that does not show on the page. The chat that makes the
@@ -481,7 +538,9 @@ Where this rule meets the others:
 - Rule 15 holds. When I add “commit and push” to an order, that is my
   confidence and my authorization.
 - Rule 24: a build is a new effort, and it usually requires a design
-  file. A fix or a defect is not a build and does not require one.
+  file. A fix or a defect is not a build and does not require one, but
+  it is still checked against the existing design (rule 5, protected
+  outcomes).
 
 ---
 
