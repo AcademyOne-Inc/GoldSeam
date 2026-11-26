@@ -302,7 +302,7 @@ before the coding begins:
   it. Report the removal file by file, in the same report as the coding.
 
 All testing happens OUTSIDE the coding effort, through resources I
-control, independent of the coder: CourseShelfPages to view the data,
+control, independent of the coder: the GoldSeam services to view the data,
 skills to scan the outcomes, the compiled EXEs run by me, and the methods
 I name. I direct or request those efforts. No chat tests on its own,
 inside the code or beside it.
